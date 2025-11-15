@@ -1,0 +1,21 @@
+# Python virtual environments
+venv/
+.venv/
+env/
+ENV/
+
+# VS Code settings (optional)
+.vscode/*
+
+# But allow the main settings file (often useful)
+!.vscode/settings.json
+
+# Common Python ignores
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Environment/secret files
+*.env
+.env
