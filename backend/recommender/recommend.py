@@ -1,70 +1,81 @@
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
+from sentence_transformers import SentenceTransformer, util
 import pandas as pd
 
-# => creates a df (data frame (a table of the csv))
 df = pd.read_csv("../data/restaurants.csv")
+
+# add a description that most of the recs will be based off
+# now using sentence transformer that would make more sense
 df["tags"] = (
     (df["cuisine"].str.lower() + " ") * 2 + # moderate weight
     (df["price_range"].str.replace("$", "dollar ")) + # light weight
-    (df["tags"].str.replace(",", " ").str.lower()) * 3 # strong weight
+    (df["tags"].str.replace(",", " ").str.lower()) * 2 # moderate weight
 )
 
-print(df["tags"])
+model = SentenceTransformer("all-MiniLM-L6-v2")
 
-# print(df)
+# convert all restaurant tags into semantic vectors
+# this is the matrix
+embeddings = model.encode(df["tags"].tolist(), convert_to_tensor=True) 
 
-# => transforms text into numerical vectors
-# => downweights common words (like “the”, “food”) and upweights unique ones (like “spicy”, “romantic”)
-# tfidf = TfidfVectorizer(stop_words="english")
-# tfidf_matrix = tfidf.fit_transform(df["tags"])
+def recommend_by_restaurant(restaurant, top_n=5):
+    print("rec by rest")
 
-vectorizer = CountVectorizer()
-count_matrix = vectorizer.fit_transform(df["tags"])
+    restaurants = df[df["name"].str.contains(restaurant["name"], regex=True)].index
 
-# print(tfidf_matrix)
+    if restaurants.empty:
+        return recommend_by_tag(restaurant["tags"])
 
-# => the cosine similarity between all the items
-# => 1.0 means identical tag vectors; 0.0 means totally different
-# similarity = cosine_similarity(tfidf_matrix)
-similarity = cosine_similarity(count_matrix)
+    index = restaurants[0]
+    ref_embedding = embeddings[index] # get the embedding of restaurants[0]
 
-print(similarity[3])
+    # model.similarity() is newer version
+    sim_scores = util.pytorch_cos_sim(ref_embedding, embeddings)[0] # compute the similarity between this restaurant and all the others
 
-# => inner df["name"] == "Sakura Sushi" picks up all the names in the df that are Sakura Sushi
-# => then the outer df makes gives you a mini DataFrame with just that restaurant
-# => then index 0 takes the first index of that dataframe (the id)
-index = df[df["name"] == "Sakura Sushi"].index[0]
+    top_results = sim_scores.topk(top_n + 1) # top 5 scores (first is itself)
 
-# print(index)
+    results = []
+    for score, indx in zip(top_results.values, top_results.indices):
+        indx = indx.item() # convert to int
 
-# => Get all similarity scores
-scores = list(enumerate(similarity[index]))
+        if indx != index: # skip itself
+            results.append(df.iloc[indx]["name"])
+        if len(results) == top_n:
+            break
 
-# => sorts the similarity scores in order (first one will be itself)
-scores = sorted(scores, key=lambda x: x[1], reverse=True)
-
-# print(scores)
-
-# => making a list with elements a position 1, 2, 3
-# => we can look at those position of scores because it is sorted 
-# => (the tuple has the indexes and we can use that to grab from the dataframe)
-
-top = [df.iloc[i[0]].name for i in scores[1:4]]
-
-print(top)
+    print("rec by rest end")
+    return results
 
 
-for i in top:
-    print(df["name"][i])
+def recommend_by_tag(tags, top_n=5):
+    print("rec by tag: " + tags)
 
+    tags = tags.replace(",", " ").lower()
 
-# # 1. Check your processed tags
-# print(df["tags"])
+    tVec = model.encode(tags, convert_to_tensor=True)
 
-# # 2. See how many unique words exist
-# print(len(tfidf.get_feature_names_out()))
+    sim_scores = util.pytorch_cos_sim(tVec, embeddings)[0]
 
-# # 3. Check non-zero counts per restaurant
-# print((tfidf_matrix != 0).sum(axis=1))
+    top_results = sim_scores.topk(top_n)
+
+    matches = []
+
+    for score, indx in zip(top_results.values, top_results.indices):
+        indx = indx.item() # convert to int
+
+        matches.append(df.iloc[indx]["name"])
+
+    return matches
+
+restaurant = {
+    "name": "West Gate Social",
+    # "name": "Sakura Sushi",
+    "cuisine": "Fast Food",
+    "price_range": "$",
+    "rating": "4.0",
+    "tags": "burgers, perogies, fries, fast food, student"
+}
+
+print(recommend_by_restaurant(restaurant))
