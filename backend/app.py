@@ -18,13 +18,18 @@ class Restaurant(BaseModel):
 def read_root():
     return {"Hello": "World"}
 
-@app.get("/recommendations") 
+@app.post("/recommendations") 
 def get_recommendations(restaurant: Restaurant):
 
-    name, cuisine, price_range, rating, tags, description = restaurant
-
+    name = restaurant.name
+    cuisine = restaurant.cuisine
+    price_range = restaurant.price_range
+    rating = restaurant.rating
+    tags = restaurant.tags
+    description = restaurant.description
+    
     if name == "" or tags == "" or description == "":
         return "Missing params."
 
-    restaurants = recommend_by_restaurant(restaurant)
+    restaurants = recommend_by_restaurant(restaurant.dict())
     return restaurants
