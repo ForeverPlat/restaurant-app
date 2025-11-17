@@ -111,8 +111,8 @@ def recommend_by_tags(tags, top_n=5):
 
 
 restaurant = {
-    "name": "West Gate Social",
-    # "name": "Sakura Sushi",
+    # "name": "West Gate Social",
+    "name": "Sakura Sushi",
     "cuisine": "Fast Food",
     "price_range": "$",
     "rating": "4.0",
