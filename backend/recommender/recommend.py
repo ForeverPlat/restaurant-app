@@ -3,8 +3,12 @@ from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 from sentence_transformers import SentenceTransformer, util
 import pandas as pd
+import os
 
-df = pd.read_csv("../data/restaurants.csv")
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+csv_path = os.path.join(BASE_DIR, "data", "restaurants.csv")
+
+df = pd.read_csv(csv_path)
 
 df["tags"] = (
     (df["cuisine"].str.lower() + " ") +
@@ -66,7 +70,7 @@ def recommend_by_restaurant(restaurant, top_n=5):
     for indx in top_results:
         # indx = indx.item() # convert to int
         if indx != index: # skip itself
-            results.append(df.iloc[indx]["name"])
+            results.append(df.iloc[indx].to_dict())
         if len(results) == top_n:
             break
 
@@ -90,7 +94,7 @@ def recommend_by_description(restaurant, top_n=5):
     top_results = hybrid_scores.argsort()[::-1][:top_n]
     
     # seems to be backwords and doesnt send only top 5
-    return [df.iloc[i]["name"] for i in top_results]
+    return [df.iloc[i].to_dict() for i in top_results]
 
 
 def recommend_by_tags(tags, top_n=5):
@@ -107,7 +111,7 @@ def recommend_by_tags(tags, top_n=5):
     hybrid_scores = alpha * sem_sim_scores + beta * tag_sim_scores
     top_results = hybrid_scores.argsort()[::-1][:top_n]
 
-    return [df.iloc[i]["name"] for i in top_results]
+    return [df.iloc[i].to_dict() for i in top_results]
 
 
 restaurant = {
@@ -120,4 +124,4 @@ restaurant = {
     "description": "Campus-adjacent grease haven slinging juicy smash burgers and golden fries alongside Alberta-style cheddar-perogie poutines that drip with gravy. Cheap combo meals and $5 milkshakes keep university students fueled through late-night cram sessions."
 }
 
-print(recommend_by_restaurant(restaurant))
+# print(recommend_by_restaurant(restaurant))
