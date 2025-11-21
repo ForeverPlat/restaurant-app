@@ -5,6 +5,9 @@ from sentence_transformers import SentenceTransformer, util
 import pandas as pd
 import os
 
+# later will be based on a db of user preferences
+# we can check for recommendations based on that
+
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 csv_path = os.path.join(BASE_DIR, "data", "restaurants.csv")
 
@@ -90,7 +93,6 @@ def recommend_by_description(restaurant, top_n=5):
     tag_sim_scores = cosine_similarity(dVec_tag, tag_matrix)[0]
 
     hybrid_scores = alpha * sem_sim_scores + beta * tag_sim_scores
-
     top_results = hybrid_scores.argsort()[::-1][:top_n]
     
     # seems to be backwords and doesnt send only top 5
@@ -100,7 +102,7 @@ def recommend_by_description(restaurant, top_n=5):
 def recommend_by_tags(tags, top_n=5):
     print("rec by tag: " + tags)
 
-    tags = restaurant["tags"].replace(",", " ").lower().strip()
+    # tags = restaurant["tags"].replace(",", " ").lower().strip()
 
     tVec_sem = model.encode(tags, convert_to_tensor=True)
     sem_sim_scores = util.pytorch_cos_sim(tVec_sem, desc_embeddings)[0].cpu().numpy()
