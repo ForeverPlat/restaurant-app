@@ -12,16 +12,16 @@ type Restaurant = {
 }
 
 // this will later need to accept restaurant type
-export const getRecommendations = async (cuisine: string) => {
+export const getRecommendations = async (description: string) => {
     
     // const query = new URLSearchParams(params).toString();
     // const res = await fetch(`${API_URL}/recommendations`, {
-    const res = await fetch(`${API_URL}/recommendations-by-cuisine`, {
+    const res = await fetch(`${API_URL}/recommendations-by-description`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json'
         },
-        body: JSON.stringify({ cuisine })
+        body: JSON.stringify({ description })
     });
 
     if (!res.ok) throw new Error("API error");

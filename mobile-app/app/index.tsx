@@ -4,7 +4,7 @@ import { Alert, Button, Text, TextInput, View } from "react-native";
 
 export default function Index() {
 
-  const [cuisine, setCuisine]  = useState("");
+  const [description, setDescription]  = useState("");
 
   return (
     <View
@@ -16,7 +16,7 @@ export default function Index() {
     >
 
       <TextInput 
-        onChangeText={newCuisine => setCuisine(newCuisine)}
+        onChangeText={newDescription => setDescription(newDescription)}
         style={{
           borderColor: 'black',
           borderWidth: 1,
@@ -28,11 +28,11 @@ export default function Index() {
       >
       </TextInput>
 
-      <Text>{ cuisine }</Text>
+      <Text>{ description }</Text>
 
       <Button
         title="Search"
-        onPress={() => router.push(`/results?cuisine=${cuisine}`)}
+        onPress={() => router.push(`/results?description=${description}`)}
       >
 
       </Button>

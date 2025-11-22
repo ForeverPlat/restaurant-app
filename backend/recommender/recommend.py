@@ -31,7 +31,6 @@ desc_embeddings = model.encode(df["description"].tolist(), convert_to_tensor=Tru
 
 # similarity matrix (restaurant ↔ restaurant by meaning)
 semantic_matrix = util.pytorch_cos_sim(desc_embeddings, desc_embeddings)
-semantic_matrix = util.pytorch_cos_sim(desc_embeddings, desc_embeddings)
 semantic_np = semantic_matrix.cpu().numpy()
 
 # ----------------------------------------------------
@@ -44,10 +43,21 @@ tag_matrix = tag_vectorizer.fit_transform(df["tags"])
 tag_sim_matrix = cosine_similarity(tag_matrix, tag_matrix)
 
 # ----------------------------------------------------
+# => TFIDF SIMILARITY (exact keyword overlap)
+# ---------------------------------------------------
+tfidf = TfidfVectorizer()
+tfidf_matrix = tfidf.fit_transform(df["description"])
+
+# ----------------------------------------------------
 # => HYBRID SIMILARITY MATRIX
 # => final score = α * semantic + β * tag
 # => tune α and β to match your style
 # ----------------------------------------------------
+
+W_SEM = 0.40    # semantic weight
+W_TFIDF = 0.3   # tfidf weight
+W_TAG = 0.3     # tag weight
+
 alpha = 0.75   # semantic meaning importance
 beta  = 0.25   # tag equality importance
 
@@ -60,7 +70,7 @@ def recommend_by_restaurant(restaurant, top_n=5):
     restaurants = df[df["name"].str.contains(restaurant["name"], regex=True)].index
 
     if restaurants.empty:
-        return recommend_by_description(restaurant)
+        return recommend_by_description(restaurant["description"])
         # return recommend_by_tags(restaurant["tags"])
 
     index = restaurants[0]
@@ -80,19 +90,32 @@ def recommend_by_restaurant(restaurant, top_n=5):
     print("rec by rest end")
     return results
 
-def recommend_by_description(restaurant, top_n=5):
-    print("rec by desc: " + restaurant["description"])
+def recommend_by_description(description, tags=None, top_n=5):
+    print("rec by desc: " + description)
 
-    description = restaurant["description"].lower()
-    tags = restaurant["tags"].replace(",", " ").lower().strip()
+    description = description.lower()
+    tags = tags.replace(",", " ").lower().strip() if tags else ""
 
     dVec_sem = model.encode(description, convert_to_tensor=True)
     sem_sim_scores = util.pytorch_cos_sim(dVec_sem, desc_embeddings)[0].cpu().numpy()
 
-    dVec_tag = tag_vectorizer.transform([tags])
-    tag_sim_scores = cosine_similarity(dVec_tag, tag_matrix)[0]
+    if tags:
+        dVec_tag = tag_vectorizer.transform([tags])
+        tag_sim_scores = cosine_similarity(dVec_tag, tag_matrix)[0]
+    else:
+        dVec_tag = tag_vectorizer.transform([description])
+        tag_sim_scores = cosine_similarity(dVec_tag, tag_matrix)[0]
 
-    hybrid_scores = alpha * sem_sim_scores + beta * tag_sim_scores
+    # new tfidf similarity
+    tfidf_vec = tfidf.transform([description])
+    tfidf_sim_scores = cosine_similarity(tfidf_vec, tfidf_matrix)[0]
+
+    hybrid_scores = (
+        W_SEM * sem_sim_scores +
+        W_TFIDF * tfidf_sim_scores +
+        W_TAG * tag_sim_scores 
+    )
+
     top_results = hybrid_scores.argsort()[::-1][:top_n]
     
     # seems to be backwords and doesnt send only top 5
@@ -102,7 +125,7 @@ def recommend_by_description(restaurant, top_n=5):
 def recommend_by_tags(tags, top_n=5):
     print("rec by tag: " + tags)
 
-    # tags = restaurant["tags"].replace(",", " ").lower().strip()
+    tags = tags.replace(",", " ").lower().strip()
 
     tVec_sem = model.encode(tags, convert_to_tensor=True)
     sem_sim_scores = util.pytorch_cos_sim(tVec_sem, desc_embeddings)[0].cpu().numpy()
@@ -110,7 +133,14 @@ def recommend_by_tags(tags, top_n=5):
     tVec_tag = tag_vectorizer.transform([tags])
     tag_sim_scores = cosine_similarity(tVec_tag, tag_matrix)[0]
 
-    hybrid_scores = alpha * sem_sim_scores + beta * tag_sim_scores
+    # new tfidf similarity
+    tfidf_sim_scores = cosine_similarity(tfidf.transform([tags]), tfidf_matrix)[0]  
+
+    hybrid_scores = (
+        W_SEM * sem_sim_scores +    
+        W_TFIDF * tfidf_sim_scores +
+        W_TAG * tag_sim_scores      
+    )
     top_results = hybrid_scores.argsort()[::-1][:top_n]
 
     return [df.iloc[i].to_dict() for i in top_results]

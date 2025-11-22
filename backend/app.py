@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from pydantic import BaseModel
 
-from recommender.recommend import recommend_by_restaurant, recommend_by_tags
+from recommender.recommend import recommend_by_restaurant, recommend_by_tags, recommend_by_description
 
 # http://127.0.0.1:8000/docs#/default/
 app = FastAPI()
@@ -14,8 +14,8 @@ class Restaurant(BaseModel):
     tags: str
     description: str
 
-class CuisineRequest(BaseModel):
-    cuisine: str
+class DescriptionRequest(BaseModel):
+    description: str
 
 @app.get("/")
 def read_root():
@@ -31,17 +31,17 @@ def get_recommendations(restaurant: Restaurant):
     tags = restaurant.tags
     description = restaurant.description
     
-    if name == "" or tags == "" or description == "":
-        return "Missing params."
+    if not restaurant.name or not restaurant.tags or not restaurant.description:
+        return {"error": "Missing params."}
 
     restaurants = recommend_by_restaurant(restaurant.dict())
     return restaurants
 
-@app.post("/recommendations-by-cuisine") 
-def get_recommendations(cuisine: CuisineRequest):
+@app.post("/recommendations-by-description") 
+def get_recommendations_by_description(data: DescriptionRequest):
 
-    if cuisine == "":
-        return "Missing params."
+    if not data.description or data.description.strip() == "":
+        return {"error": "Missing description parameter."}
 
-    restaurants = recommend_by_tags(cuisine.cuisine)
+    restaurants = recommend_by_description(data.description)
     return restaurants

@@ -14,18 +14,18 @@ export default function Results() {
         description: string
     }
 
-    const { cuisine } = useLocalSearchParams();
+    const { description } = useLocalSearchParams();
     const [recommendations, setRecommendations] = useState<Restaurant[]>([]);
 
     useEffect(() => {
-        if (cuisine) {
-            getRecommendations(cuisine.toString()).then(setRecommendations);
+        if (description) {
+            getRecommendations(description.toString()).then(setRecommendations);
         }
-    }, [cuisine]);
+    }, [description]);
 
     return (
         <View>
-            <Text>{ cuisine }</Text>
+            <Text>{ description }</Text>
 
             <FlatList
                 data={recommendations}
