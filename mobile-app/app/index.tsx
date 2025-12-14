@@ -1,6 +1,6 @@
 import { router } from "expo-router";
 import { useState } from "react";
-import { Alert, Button, Text, TextInput, View } from "react-native";
+import { Alert, Button, Dimensions, StyleSheet, Text, TextInput, View } from "react-native";
 import Swiper from 'react-native-deck-swiper'
 
 // temp
@@ -10,36 +10,48 @@ type Card = {
 
 const cards: Card[] = [
   { text: "hello" },
+  { text: "to" },
+  { text: "the" },
+  { text: "world" }
 ]
+
+const { width, height } = Dimensions.get("window")
+const CARD_WIDTH = width * 0.9;
+const CARD_HEIGHT = height * 0.7;
 
 export default function Index() {
 
-  const [description, setDescription]  = useState("");
-  
+  // const [description, setDescription]  = useState("");
 
-  const renderCard = (card: Card ) => {
-    <View>
-      <Text>
-        {card.text}
-      </Text>
-    </View>
+  // card
+  const renderCard = (card: Card) => {
+    return (
+      <View style={styles.card}>
+        <Text style={styles.text}>
+          {card.text}
+        </Text>
+      </View>
+    );
   }
 
   return (
-    <View
-      style={{
-        flex: 1,
-        justifyContent: "center",
-        alignItems: "center",
-      }}
-    >
+    <View style={styles.container} >
 
-      
+      <Swiper
+        cards={cards}
+        renderCard={renderCard}
+        backgroundColor="transparent"
+        stackSize={2}
+        stackSeparation={15}
+        cardIndex={0}
+        // infinite={true}
+        showSecondCard={true}
+        animateOverlayLabelsOpacity
+        animateCardOpacity
+        swipeBackCard
+      />
 
-      <Swiper cards={cards} renderCard={renderCard} />
-
-
-      <TextInput 
+      {/* <TextInput 
         onChangeText={newDescription => setDescription(newDescription)}
         style={{
           borderColor: 'black',
@@ -58,11 +70,36 @@ export default function Index() {
         title="Search"
         onPress={() => router.push(`/results?description=${description}`)}
       >
-
-      </Button>
-
-
-
+      </Button> */}
     </View>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: "red",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  
+  card: {
+    width: CARD_WIDTH,
+    height: CARD_HEIGHT,
+    backgroundColor: "blue",
+    borderRadius: 16,
+    justifyContent: "center",
+    alignItems: "center",
+    elevation: 5,        // Android shadow
+    shadowColor: "#000", // iOS shadow
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 6,
+  },
+
+  text: {
+    color: "white",
+    fontSize: 28,
+    fontWeight: "600",
+  },
+});
