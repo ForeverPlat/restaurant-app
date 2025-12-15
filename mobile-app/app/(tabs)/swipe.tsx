@@ -8,6 +8,7 @@ type Card = {
   text: string
 }
 
+// get this info from an api call
 const cards: Card[] = [
   { text: "hello" },
   { text: "to" },
@@ -43,12 +44,9 @@ export default function Swipe() {
         backgroundColor="transparent"
         stackSize={2}
         stackSeparation={15}
-        cardIndex={0}
-        // infinite={true}
-        showSecondCard={true}
-        animateOverlayLabelsOpacity
-        animateCardOpacity
         swipeBackCard
+        showSecondCard={true}
+        verticalSwipe={false}
       />
 
       {/* <TextInput 
