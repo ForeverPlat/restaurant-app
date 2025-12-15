@@ -1,0 +1,22 @@
+from pydantic import BaseModel, Field
+from typing import List, Optional, Dict
+
+class Restaurant(BaseModel):
+    id: str
+    name: str
+    types: List[str]  # tags and cuisine
+    price_range: Optional[int] = Field(None, ge=0, le=4)
+    rating: Optional[float] = Field(None, ge=0, le=5)
+    images: List[str] = Field(default_factory=list)
+    description: Optional[str] = None
+    address: Optional[str] = None
+    latitude: Optional[float] = None
+    longitude: Optional[float] = None
+
+class RestaurantsResponse(BaseModel): 
+    restaurants: List[Restaurant]
+    count: int
+
+class UserPreferences(BaseModel):
+    types: Dict[str, int] = Field(default_factory=dict)
+    price_levels: Dict[str, int] = Field(default_factory=dict)

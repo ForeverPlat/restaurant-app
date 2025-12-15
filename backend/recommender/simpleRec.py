@@ -87,6 +87,8 @@ def build_user_profile(swipes, restaurants):
 
     for swipe in swipes:
 
+        # for revamp add for dislikes as well
+        # slight decrease in score wehn things included in dislikes
         if swipe["direction"] == "right":
 
             restaurant = restaurants[swipe["restaurant_id"]]
