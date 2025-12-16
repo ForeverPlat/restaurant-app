@@ -16,7 +16,3 @@ class Restaurant(BaseModel):
 class RestaurantsResponse(BaseModel): 
     restaurants: List[Restaurant]
     count: int
-
-class UserPreferences(BaseModel):
-    types: Dict[str, int] = Field(default_factory=dict)
-    price_levels: Dict[str, int] = Field(default_factory=dict)
