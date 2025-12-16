@@ -4,8 +4,22 @@ from app.config import GOOGLE_API_KEY
 from dotenv import load_dotenv
 import os
 from app.models.restaurant import Restaurant, RestaurantsResponse
+from typing import List, Optional, Dict
 
 PLACES_NEARBY_URL = "https://maps.googleapis.com/maps/api/place/nearbysearch/json"
+PLACE_PHOTO_URL = "https://maps.googleapis.com/maps/api/place/photo"
+
+# helper method
+def get_photo_url(photo_references: List[dict], max_photos: int = 5) -> List[str]:
+    """Convert photo refrence to actual urls"""
+    urls = []
+    for photo in photo_references[:max_photos]:
+        photo_ref = photo.get('photo_reference')
+
+        if photo_ref:
+            url = f"{PLACE_PHOTO_URL}?maxwidth=800&photo_reference={photo_ref}&key={GOOGLE_API_KEY}"
+            urls.append(url)
+    return urls
 
 async def search_nearby(lat, lng, radius=1500):
     # google api logic to get nearby here
@@ -56,8 +70,8 @@ async def search_nearby(lat, lng, radius=1500):
                     types = types,
                     price_range=place.get('price_level'),
                     rating = place.get('rating'),
-                    images = [],
-                    # images = get_photo_url(photos), # do later
+                    # images = [],
+                    images = get_photo_url(photos),
                     description = None,
                     address = place.get('vicinity'),
                     latitude = location.get('lat'),
