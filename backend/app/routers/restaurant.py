@@ -7,6 +7,6 @@ router = APIRouter(prefix="/api/restaurants", tags=["Restaurants"])
 async def get_nearby(lat: float, lng: float):
     return await google_places.search_nearby(lat, lng)
 
-router.get("/{id}")
+@router.get("/{id}")
 async def get_restaurant(id: str):
     return await google_places.get_restaurant(id)

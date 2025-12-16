@@ -1,12 +1,21 @@
 from fastapi import FastAPI
-from app.routers import restaurant, recommendations
+from app.routers import restaurant, recommendation
 
 app = FastAPI(title="Restaurant Finder API")
 
 # like app.use() in express
-app.include_router(restaurant)
-app.include_router(recommendations)
+app.include_router(restaurant.router)
+app.include_router(recommendation.router)
 
+@app.get("/")
+def read_root():
+    return {"status": "ok", "message": "Restaurant Finder API"}
+
+
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run(app, host="0.0.0.0", port=8000)
+    
 # from fastapi import FastAPI
 # from pydantic import BaseModel
 
