@@ -30,14 +30,19 @@ def recommendation_score(restaurant: Restaurant, user_preferences: UserPreferenc
             if matching_weight > 0:
                 score += matching_weight
 
-
-
+    return score
 
 async def get_recommendations(user_preferences, lat, lng):
     restaurants = await google_places.search_nearby(lat, lng)
 
     scored_restaurants = []
-    # recommendation logic
 
+    for restaurant in restaurants:
+        restaurant_score = {
+            restaurant,
+            recommendation_score(restaurant, user_preferences)
+        }
+
+        scored_restaurants.append(restaurant_score)
 
     return scored_restaurants
