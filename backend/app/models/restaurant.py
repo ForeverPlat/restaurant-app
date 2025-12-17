@@ -5,7 +5,7 @@ class Restaurant(BaseModel):
     id: str
     name: str
     types: List[str]  # tags and cuisine
-    price_range: Optional[int] = Field(None, ge=0, le=4)
+    price_level: Optional[int] = Field(None, ge=0, le=4)
     rating: Optional[float] = Field(None, ge=0, le=5)
     images: List[str] = Field(default_factory=list)
     description: Optional[str] = None

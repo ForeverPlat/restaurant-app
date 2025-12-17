@@ -9,15 +9,16 @@ user_preferences: UserPreferences = {
 
 def recommendation_score(restaurant: Restaurant, user_preferences: UserPreferences):
 
-    score = 0
+    type_score = 0
 
+    # types score
     generic_types = {"restaurant", "food", "point_of_interest", "establishment", "store"}
     
     for rtype in restaurant.types:
         if rtype in generic_types:
-            score += 0.1
+            type_score += 0.1
         elif rtype in user_preferences.types:
-            score += user_preferences.types[rtype] # adding based on user weight
+            type_score += user_preferences.types[rtype] # adding based on user weight
         else:
             user_cuisine_name = user_preferences.types.keys()
 
@@ -28,9 +29,19 @@ def recommendation_score(restaurant: Restaurant, user_preferences: UserPreferenc
                     break
         
             if matching_weight > 0:
-                score += matching_weight
+                type_score += matching_weight
 
-    return score
+        price_score = user_preferences["price_levels"].get(restaurant.price_level, 0)
+
+        rating_score = restaurant.rating / 5.0
+
+    final_score = (
+        0.70 * type_score +
+        0.15 * price_score +
+        0.15 * rating_score
+    )
+
+    return final_score
 
 async def get_recommendations(user_preferences, lat, lng):
     restaurants = await google_places.search_nearby(lat, lng)
