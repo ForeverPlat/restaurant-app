@@ -1,45 +1,74 @@
 import { router } from "expo-router";
-import { useState } from "react";
-import { Alert, Button, Dimensions, StyleSheet, Text, TextInput, View } from "react-native";
+import { useEffect, useState } from "react";
+import { Dimensions, StyleSheet, Text, View } from "react-native";
 import Swiper from 'react-native-deck-swiper'
-
-// temp
-type Card = {
-  text: string
-}
-
-// get this info from an api call
-const cards: Card[] = [
-  { text: "hello" },
-  { text: "to" },
-  { text: "the" },
-  { text: "world" }
-]
+import * as dotenv from 'dotenv'
+import { Restaurant, Restaurants } from "@/types/swipe";
 
 const { width, height } = Dimensions.get("window")
 const CARD_WIDTH = width * 0.9;
 const CARD_HEIGHT = height * 0.7;
 
+dotenv.config()
+const url = process.env.BACKEND_URL;
+
 export default function Swipe() {
 
-  // const [description, setDescription]  = useState("");
+  const [restaurants, setRestaurants] = useState<Restaurants>();
+  const [userPreferences, setUserPreferences] = useState();
+  const lat = 0.0;
+  const lng = 0.0;
+  // get lat and lng using expo-location
+  // Location.getCurrentPositionAsync({})
+  
+  const getRecommendations = async () => {
+
+    try {
+      const res = await fetch(`${url}/api/recommendations`, {
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userPreferences, lat, lng })
+      });
+
+      const result = await res.json();
+      setRestaurants(result);
+
+      if (res.ok) {
+
+      } else {
+
+      }
+
+    } catch (error) {
+      
+    }
+  }
+
+  // maybe runs every x # of swipes
+  // referecne notes
+  useEffect(() => {
+    (async () => {
+      await getRecommendations();
+    })();
+  }, [])
 
   // card
-  const renderCard = (card: Card) => {
+  const renderCard = (restaurant: Restaurant) => {
     return (
       <View style={styles.card}>
         <Text style={styles.text}>
-          {card.text}
+          { restaurant.name }
         </Text>
       </View>
     );
   }
 
+
   return (
     <View style={styles.container} >
 
       <Swiper
-        cards={cards}
+        cards={restaurants}
         renderCard={renderCard}
         backgroundColor="transparent"
         stackSize={2}
@@ -49,29 +78,10 @@ export default function Swipe() {
         verticalSwipe={false}
       />
 
-      {/* <TextInput 
-        onChangeText={newDescription => setDescription(newDescription)}
-        style={{
-          borderColor: 'black',
-          borderWidth: 1,
-          borderRadius: 5,
-          padding: 10,
-          width: 200
-        }}
-        placeholder="Search..."
-      >
-      </TextInput>
-
-      <Text>{ description }</Text>
-
-      <Button
-        title="Search"
-        onPress={() => router.push(`/results?description=${description}`)}
-      >
-      </Button> */}
     </View>
   );
 }
+
 
 const styles = StyleSheet.create({
   container: {
