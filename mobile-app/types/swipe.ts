@@ -12,3 +12,8 @@ export type Restaurant = {
 }
 
 export type Restaurants = Restaurant[]
+
+export type UserPreferences = {
+    type: object
+    price_levels: object
+}

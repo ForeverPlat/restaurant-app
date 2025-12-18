@@ -1,64 +1,75 @@
-import { router } from "expo-router";
 import { useEffect, useState } from "react";
-import { Dimensions, StyleSheet, Text, View } from "react-native";
+import { ActivityIndicator, Dimensions, StyleSheet, Text, View } from "react-native";
 import Swiper from 'react-native-deck-swiper'
-import * as dotenv from 'dotenv'
-import { Restaurant, Restaurants } from "@/types/swipe";
+import { Restaurant, Restaurants, UserPreferences } from "@/types/swipe";
+
 
 const { width, height } = Dimensions.get("window")
 const CARD_WIDTH = width * 0.9;
 const CARD_HEIGHT = height * 0.7;
 
-dotenv.config()
-const url = process.env.BACKEND_URL;
+const url = process.env.EXPO_BACKEND_URL;
 
 export default function Swipe() {
+  const [restaurants, setRestaurants] = useState<Restaurants>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [userPreferences, setUserPreferences] = useState<UserPreferences>();
 
-  const [restaurants, setRestaurants] = useState<Restaurants>();
-  const [userPreferences, setUserPreferences] = useState();
   const lat = 0.0;
   const lng = 0.0;
-  // get lat and lng using expo-location
-  // Location.getCurrentPositionAsync({})
   
   const getRecommendations = async () => {
 
     try {
-      const res = await fetch(`${url}/api/recommendations`, {
-        method: 'GET',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userPreferences, lat, lng })
-      });
+      const res = await fetch(`${url}/api/recommendations?lat=${lat}&lng=${lng}`);
+
+      if (!res.ok) {
+        throw new Error("Failed to fetch recommendations");
+      }
 
       const result = await res.json();
       setRestaurants(result);
-
-      if (res.ok) {
-
-      } else {
-
-      }
-
     } catch (error) {
-      
+      setError("Something went wrong");
+      console.error(error);
+    } finally {
+      setLoading(false);
     }
   }
 
   // maybe runs every x # of swipes
   // referecne notes
   useEffect(() => {
-    (async () => {
-      await getRecommendations();
-    })();
+    getRecommendations();
   }, [])
 
   // card
   const renderCard = (restaurant: Restaurant) => {
+    if (!restaurant) return null;
+
     return (
       <View style={styles.card}>
         <Text style={styles.text}>
           { restaurant.name }
+          { restaurant?.description }
         </Text>
+      </View>
+    );
+  }
+
+  if (loading) {
+    return (
+      <View style={styles.container}>
+        <ActivityIndicator size="large" />
+      </View>
+    );
+  }
+
+  if (error) {
+    return (
+      <View style={styles.container}>
+        <Text>{error}</Text>
       </View>
     );
   }
