@@ -33,7 +33,10 @@ export default function Swipe() {
       }
 
       const result = await res.json();
-      setRestaurants(result);
+      setRestaurants(result.restaurants);
+
+      // console.log("Fetched restaurants:", result.restaurants.length);
+      // console.log("First fetched restaurant:", result.restaurants[0]);
     } catch (error) {
       setError("Something went wrong");
       console.error(error);
@@ -41,6 +44,10 @@ export default function Swipe() {
       setLoading(false);
     }
   }
+
+  useEffect(() => {
+    console.log("Restaurants updated:", restaurants.length);
+  }, [restaurants]);
 
   // maybe runs every x # of swipes
   // referecne notes
@@ -60,8 +67,11 @@ export default function Swipe() {
       }
 
       const currLocation = await Location.getCurrentPositionAsync({});
-      setLat(currLocation.coords.latitude);
-      setLng(currLocation.coords.longitude);
+      // setLat(currLocation.coords.latitude);
+      // setLng(currLocation.coords.longitude);
+      // testing using calgary
+      setLat(51.0447);
+      setLng(-114.0719);
     })();
   }, []);
 
@@ -70,7 +80,7 @@ export default function Swipe() {
     if (!restaurant) return null;
 
     return (
-      <ImageBackground source={restaurant.images[0]} style={styles.background}>
+      <ImageBackground source={{ uri: restaurant.images[0] }} style={styles.background}>
         <View style={styles.card}>
           <Text style={styles.text}>
             { restaurant.name }
