@@ -1,10 +1,10 @@
 import { useEffect, useState } from "react";
 import { ActivityIndicator, Dimensions, StyleSheet, Text, View } from "react-native";
-import Swiper from 'react-native-deck-swiper'
+import Swiper from 'react-native-deck-swiper';
+import { ImageBackground } from "expo-image";
 import * as Location from 'expo-location'
 import { LinearGradient } from "expo-linear-gradient";
 import { Restaurant, Restaurants, UserPreferences } from "@/types/swipe";
-import { ImageBackground } from "expo-image";
 
 const { width, height } = Dimensions.get("window")
 const CARD_WIDTH = width * 0.93;
@@ -38,6 +38,30 @@ export default function Swipe() {
 
       // console.log("Fetched restaurants:", result.restaurants.length);
       // console.log("First fetched restaurant:", result.restaurants[0]);
+    } catch (error) {
+      setError("Something went wrong");
+      console.error(error);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  const handleSwipe = async (index: number, action: 'like' | 'dislike') => {
+    try {
+      // will later need to send in the users or something
+      // need to create endpoint
+      const res = await fetch(`${url}/api/user_preferences/save-swipe`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          restaurant: restaurants[index],
+          action
+        })
+      });
+
+
     } catch (error) {
       setError("Something went wrong");
       console.error(error);
@@ -132,22 +156,25 @@ export default function Swipe() {
 
   return (
     <View style={styles.container} >
-    <Swiper
-      cards={restaurants}
-      renderCard={renderCard}
-      backgroundColor="transparent"
-      stackSize={3}
-      stackSeparation={12}
-      swipeBackCard
-      showSecondCard
-      verticalSwipe={false}
-      cardHorizontalMargin={0}
-      containerStyle={{ flex: 1 }}
-      cardStyle={{
-        top: height * 0.025,
-        left: (width - CARD_WIDTH) / 2,
-      }}
-    />
+      <Swiper
+        cards={restaurants}
+        renderCard={renderCard}
+        backgroundColor="transparent"
+        stackSize={3}
+        stackSeparation={12}
+        swipeBackCard
+        showSecondCard
+        verticalSwipe={false}
+        onSwipedLeft={(index) => handleSwipe(index, 'dislike')}
+        onSwipedRight={(index) => handleSwipe(index, 'like')}
+        // onSwiped={handleSwipe}
+        cardHorizontalMargin={0}
+        containerStyle={{ flex: 1 }}
+        cardStyle={{
+          top: height * 0.025,
+          left: (width - CARD_WIDTH) / 2,
+        }}
+      />
     </View>
   );
 }
