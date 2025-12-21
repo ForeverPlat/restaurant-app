@@ -7,8 +7,8 @@ export type Restaurant = {
     images: string[]
     description?: string
     address?: string
-    latitude?: number // float
-    longtitude?: number // float
+    latitude: number // float
+    longtitude: number // float
 }
 
 export type Restaurants = Restaurant[]

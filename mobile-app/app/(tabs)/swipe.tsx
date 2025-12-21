@@ -5,6 +5,7 @@ import { ImageBackground } from "expo-image";
 import * as Location from 'expo-location'
 import { LinearGradient } from "expo-linear-gradient";
 import { Restaurant, Restaurants, UserPreferences } from "@/types/swipe";
+import { distance } from "@/utils/distance";
 
 const { width, height } = Dimensions.get("window")
 const CARD_WIDTH = width * 0.93;
@@ -70,6 +71,7 @@ export default function Swipe() {
     }
   }
 
+
   useEffect(() => {
     console.log("Restaurants updated:", restaurants.length);
   }, [restaurants]);
@@ -126,7 +128,7 @@ export default function Swipe() {
               <Text style={styles.name}>{restaurant.name}</Text>
 
               <View style={styles.row}>
-                <Text style={styles.distance}>📍 300 meters away</Text>
+                <Text style={styles.distance}>📍 { distance(lat, lng, restaurant.latitude, restaurant.longtitude) } meters away</Text>
               </View>
 
               <Text style={styles.description}>
