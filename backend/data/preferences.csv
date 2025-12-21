@@ -1,0 +1,15 @@
+user_id,category,value,count
+1,type,italian,12
+1,type,mexican,7
+1,type,japanese,6
+1,type,indian,3
+1,type,thai,4
+1,type,american,9
+1,type,vegetarian,6
+1,type,seafood,3
+1,type,pizza,10
+1,type,cafe,8
+1,price_level,1,4
+1,price_level,2,11
+1,price_level,3,7
+1,price_level,4,2
