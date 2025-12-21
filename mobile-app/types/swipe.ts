@@ -8,7 +8,7 @@ export type Restaurant = {
     description?: string
     address?: string
     latitude: number // float
-    longtitude: number // float
+    longitude: number // float
 }
 
 export type Restaurants = Restaurant[]

@@ -62,7 +62,6 @@ export default function Swipe() {
         })
       });
 
-
     } catch (error) {
       setError("Something went wrong");
       console.error(error);
@@ -128,7 +127,7 @@ export default function Swipe() {
               <Text style={styles.name}>{restaurant.name}</Text>
 
               <View style={styles.row}>
-                <Text style={styles.distance}>📍 { distance(lat, lng, restaurant.latitude, restaurant.longtitude) } meters away</Text>
+                <Text style={styles.distance}>📍 { distance(lat, lng, restaurant.latitude, restaurant.longitude) } meters away</Text>
               </View>
 
               <Text style={styles.description}>
