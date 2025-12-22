@@ -78,6 +78,9 @@ async def search_nearby(lat, lng, radius=1500):
                     longitude = location.get('lng')
                 )
 
+                if len(restaurant.images) == 1:
+                    restaurant.images = restaurant.images * 3
+
                 restaurants.append(restaurant)
         
         except httpx.HTTPError as error:

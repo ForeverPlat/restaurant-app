@@ -14,19 +14,23 @@ const CARD_HEIGHT = height * 0.75;
 const url = process.env.EXPO_PUBLIC_BACKEND_URL
 
 export default function SwipeDeck({ restaurants, lat, lng }: SwipeDeckProps) {
+    const [imageIndexes, setImageIndexes] = useState<Record<number, number>>({});
     const [error, setError] = useState<string | null>(null);
     // const [loading, setLoading] = useState(true);
 
-    const renderCard = (restaurant: Restaurant) => {
+    const renderCard = (restaurant: Restaurant, cardIndex: number) => {
       if (!restaurant) return null;
       // if no image skip card
       // if (!restaurant.images?.length) return null;
 
-      const imageUri = restaurant.images?.[0];
+      const currentImageIndex = imageIndexes[cardIndex] ?? 0; // defualt if null
+      const imageUri = restaurant.images?.[currentImageIndex];
+
 
       return (
         <View style={styles.card}>
           <ImageBackground
+            pointerEvents="none"
             source={imageUri ? { uri: imageUri } : undefined}
             style={[ styles.image, !imageUri && { backgroundColor: "#111" }, ]}
             imageStyle={styles.imageRadius}
@@ -56,24 +60,29 @@ export default function SwipeDeck({ restaurants, lat, lng }: SwipeDeckProps) {
 
     const handleSwipe = async (index: number, action: 'like' | 'dislike') => {
       try {
-        // will later need to send in the users or something
-        // need to create endpoint
-        const res = await fetch(`${url}/api/user_preferences/save-swipe`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({
-            restaurant: restaurants[index],
-            action
-          })
-        });
+        // // will later need to send in the users or something
+        // // need to create endpoint
+        // const res = await fetch(`${url}/api/user_preferences/save-swipe`, {
+        //   method: 'POST',
+        //   headers: {
+        //     'Content-Type': 'application/json'
+        //   },
+        //   body: JSON.stringify({
+        //     restaurant: restaurants[index],
+        //     action
+        //   })
+        // });
 
       } catch (error) {
         setError("Something went wrong");
         console.error(error);
       } finally {
         // setLoading(false);
+          setImageIndexes(prev => {
+            const copy = { ...prev };
+            delete copy[index];
+            return copy;
+          });
       }
     }
 
@@ -85,12 +94,26 @@ export default function SwipeDeck({ restaurants, lat, lng }: SwipeDeckProps) {
     //   );
     // }
 
+    useEffect(() => {
+      console.log("imageIndex:", imageIndexes);
+    }, [imageIndexes]);
+
     if (error) {
       return (
         <View style={styles.container}>
           <Text>{error}</Text>
         </View>
       );
+    }
+
+    const handleTap = (cardIndex: number) => {
+      const images = restaurants[cardIndex]?.images;
+      if (!images || images.length <= 1) return;
+
+      setImageIndexes(prev => ({
+        ...prev,
+        [cardIndex]: ((prev[cardIndex] ?? 0) + 1) % images.length,
+      }));
     }
 
     return (
@@ -104,8 +127,9 @@ export default function SwipeDeck({ restaurants, lat, lng }: SwipeDeckProps) {
           swipeBackCard
           showSecondCard
           verticalSwipe={false}
-          // onSwipedLeft={(index) => handleSwipe(index, 'dislike')}
-          // onSwipedRight={(index) => handleSwipe(index, 'like')}
+          onSwipedLeft={(index) => handleSwipe(index, 'dislike')}
+          onSwipedRight={(index) => handleSwipe(index, 'like')}
+          onTapCard={(index) => handleTap(index)}
           cardHorizontalMargin={0}
           containerStyle={{ flex: 1 }}
           cardStyle={{
