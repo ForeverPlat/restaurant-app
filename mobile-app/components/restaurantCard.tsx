@@ -1,5 +1,5 @@
 import { View, Text, StyleSheet, Dimensions, Pressable } from 'react-native'
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { Restaurant } from '@/types/swipe';
 import { ImageBackground } from 'expo-image';
 import { distance } from '@/utils/distance';
@@ -9,16 +9,31 @@ const { width, height } = Dimensions.get("window")
 const CARD_WIDTH = width * 0.93;
 const CARD_HEIGHT = height * 0.75;
 
-export default function RestaurantCard({restaurant, lat, lng}: {restaurant: Restaurant, lat: number, lng: number}) {
+export default function RestaurantCard({restaurant, lat, lng, images}: {restaurant: Restaurant, lat: number, lng: number, images: string[]}) {
     const [imageIndex, setImageIndex] = useState(0);
 
-    const imageUri = restaurant.images[imageIndex];
-    
-    const handleTap = () => {
-        if (!restaurant.images || restaurant.images.length <= 1) return;
+    // const imageUri = images[imageIndex];
+    const displayImages = images?.length
+        ? images
+        : restaurant.images;
 
-        setImageIndex((prev) => (prev + 1) % restaurant.images.length)
+    const imageUri = displayImages[imageIndex];
+
+    const handleTap = () => {
+        // if (!restaurant.images || restaurant.images.length <= 1) return;
+        // setImageIndex((prev) => (prev + 1) % restaurant.images.length)
+
+        if (!displayImages || displayImages.length <= 1) return;
+
+        setImageIndex(prev => (prev + 1) % displayImages.length);
     }
+
+    // for safety....
+    useEffect(() => {
+        if (imageIndex >= displayImages.length) {
+            setImageIndex(0);
+        }
+    }, [displayImages]);
 
   return (
     <View style={styles.card}>
@@ -29,7 +44,7 @@ export default function RestaurantCard({restaurant, lat, lng}: {restaurant: Rest
                 imageStyle={styles.imageRadius}
             >
                 <View style={styles.imageIndexBarContainer}>
-                    {restaurant.images.map((_, index) => (
+                    {displayImages.map((_, index) => (
                     <View 
                         style={[
                             styles.imageIndexBar, 

@@ -12,18 +12,22 @@ const CARD_WIDTH = width * 0.93;
 const url = process.env.EXPO_PUBLIC_BACKEND_URL
 
 export default function SwipeDeck({ restaurants, lat, lng }: SwipeDeckProps) {
-    const [imageIndexes, setImageIndexes] = useState<Record<number, number>>({});
     const [error, setError] = useState<string | null>(null);
+    const [cardImages, setCardImages] = useState<Record<string, string[]>>({});
+    const [loadingImages, setLoadingImages] = useState<Record<string, boolean>>({});
     // const [loading, setLoading] = useState(true);
 
-    const renderCard = (restaurant: Restaurant, cardIndex: number) => {
+    const renderCard = (restaurant: Restaurant) => {
       if (!restaurant) return null;
       // if no image skip card
       // if (!restaurant.images?.length) return null;
 
+      // const images = cardImages.get()
+
       return (
         <RestaurantCard
           restaurant={restaurant}
+          images={cardImages[restaurant.id]}
           lat={lat}
           lng={lng}
         />
@@ -50,13 +54,50 @@ export default function SwipeDeck({ restaurants, lat, lng }: SwipeDeckProps) {
         console.error(error);
       } finally {
         // setLoading(false);
-          setImageIndexes(prev => {
-            const copy = { ...prev };
-            delete copy[index];
-            return copy;
-          });
       }
     }
+
+    const getImages = async (restaurant: Restaurant) => {
+      const id = restaurant.id;
+
+      if (cardImages[id]) return;
+      if (loadingImages[id]) return;
+
+      // mark as loading
+      setLoadingImages((prev) => ({
+        ...prev,
+        [id]: true 
+      }));
+
+      try {
+        const res = await fetch(`${url}/api/restaurants/details/${restaurant.id}`);
+
+        if (!res.ok) {
+          throw new Error("Failed to fetch recommendations");
+        }
+        
+        const result = await res.json();
+
+        setCardImages((prev) => ({
+          ...prev,
+          [restaurant.id]: result.images
+        }));
+      } catch (error) {
+        setError("Error fetching images")
+      } finally {
+        setLoadingImages((prev) => {
+          const next = { ...prev };
+          delete next[id];
+          return next;
+        });
+      }
+    }
+
+    useEffect(() => {
+      if (restaurants.length > 0) {
+        getImages(restaurants[0]);
+      }
+    }, [restaurants]);
 
     // if (loading) {
     //   return (
@@ -66,26 +107,12 @@ export default function SwipeDeck({ restaurants, lat, lng }: SwipeDeckProps) {
     //   );
     // }
 
-    useEffect(() => {
-      console.log("imageIndex:", imageIndexes);
-    }, [imageIndexes]);
-
     if (error) {
       return (
         <View style={styles.container}>
           <Text>{error}</Text>
         </View>
       );
-    }
-
-    const handleTap = (cardIndex: number) => {
-      const images = restaurants[cardIndex]?.images;
-      if (!images || images.length <= 1) return;
-
-      setImageIndexes(prev => ({
-        ...prev,
-        [cardIndex]: ((prev[cardIndex] ?? 0) + 1) % images.length,
-      }));
     }
 
     return (
@@ -99,9 +126,12 @@ export default function SwipeDeck({ restaurants, lat, lng }: SwipeDeckProps) {
           swipeBackCard
           showSecondCard
           verticalSwipe={false}
+          onSwiped={(index) => {
+            const next = restaurants[index + 1];
+            if (next) getImages(next)
+          }}
           onSwipedLeft={(index) => handleSwipe(index, 'dislike')}
           onSwipedRight={(index) => handleSwipe(index, 'like')}
-          onTapCard={(index) => handleTap(index)}
           cardHorizontalMargin={0}
           containerStyle={{ flex: 1 }}
           cardStyle={{
