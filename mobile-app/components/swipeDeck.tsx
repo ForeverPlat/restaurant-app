@@ -6,6 +6,7 @@ import { LinearGradient } from "expo-linear-gradient";
 import { Restaurant } from "@/types/swipe";
 import { distance } from "@/utils/distance";
 import { SwipeDeckProps } from "@/types/swipeDeck";
+import RestaurantCard from "./restaurantCard";
 
 const { width, height } = Dimensions.get("window")
 const CARD_WIDTH = width * 0.93;
@@ -23,38 +24,12 @@ export default function SwipeDeck({ restaurants, lat, lng }: SwipeDeckProps) {
       // if no image skip card
       // if (!restaurant.images?.length) return null;
 
-      const currentImageIndex = imageIndexes[cardIndex] ?? 0; // defualt if null
-      const imageUri = restaurant.images?.[currentImageIndex];
-
-
       return (
-        <View style={styles.card}>
-          <ImageBackground
-            pointerEvents="none"
-            source={imageUri ? { uri: imageUri } : undefined}
-            style={[ styles.image, !imageUri && { backgroundColor: "#111" }, ]}
-            imageStyle={styles.imageRadius}
-          >
-            <LinearGradient
-              colors={["transparent", "rgba(0,0,0,0.85)"]}
-              locations={[0, 1]}
-              style={styles.gradient}
-            />
-
-            {/* Text content */}
-            <View style={styles.content}>
-              <Text style={styles.name}>{restaurant.name}</Text>
-
-              <View style={styles.row}>
-                <Text style={styles.distance}>📍 { distance(lat, lng, restaurant.latitude, restaurant.longitude) } meters away</Text>
-              </View>
-
-              <Text style={styles.description}>
-                {restaurant.description ?? "Small plates & seafood mains, plus cocktails & beer on tap presented in an eco-chic space."}
-              </Text>
-            </View>
-          </ImageBackground>
-        </View>
+        <RestaurantCard
+          restaurant={restaurant}
+          lat={lat}
+          lng={lng}
+        />
       );
     };
 
@@ -159,6 +134,28 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 10 },
     shadowOpacity: 0.25,
     shadowRadius: 12,
+  },
+
+  imageIndexBarContainer: {
+    position: "absolute",
+    top: 12,
+    left: 16,
+    right: 16,
+    height: 5,
+    flexDirection: "row",
+    gap: 6,
+    zIndex: 10
+  },
+
+  imageIndexBar: {
+    flex: 1,
+    height: 5,
+    backgroundColor: "#ffffff4d",
+    borderRadius: 2,
+  },
+
+  imageIndexBarActive: {
+    backgroundColor: "#fff",
   },
 
   image: {
