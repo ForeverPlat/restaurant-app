@@ -10,7 +10,7 @@ PLACES_NEARBY_URL = "https://maps.googleapis.com/maps/api/place/nearbysearch/jso
 PLACE_PHOTO_URL = "https://maps.googleapis.com/maps/api/place/photo"
 PLACE_DETAILS_URL = "https://maps.googleapis.com/maps/api/place/details/json"
 
-DETAILS_CACHE: dict[dict[str, list[str]]] = {}
+DETAILS_CACHE: dict[str, dict[str, list[str]]] = {}
 
 # helper method
 def get_photo_url(photo_references: List[dict], max_photos: int = 5) -> List[str]:
@@ -23,6 +23,7 @@ def get_photo_url(photo_references: List[dict], max_photos: int = 5) -> List[str
             url = f"{PLACE_PHOTO_URL}?maxwidth=800&photo_reference={photo_ref}&key={GOOGLE_API_KEY}"
             urls.append(url)
     return urls
+
 
 async def get_details(place_id: str):
     """Get details of a restaurnant"""
@@ -50,17 +51,23 @@ async def get_details(place_id: str):
                     detail=f"Google Place Details API error: {data.get('status')}"
                 )
 
-            results = data.get('results', {})
-            images = get_photo_url(results.get('photos', []))
+            result = data.get('result', {})
+            images = get_photo_url(result.get('photos', []))
 
-            DETAILS_CACHE[place_id]["images"] = images
-            return images 
+            details = {
+                "images": images
+            }
+
+            DETAILS_CACHE[place_id] = details
+
+            return details
 
         except httpx.HTTPError as error:
             raise HTTPException(
                 status_code=500,
                 detail=f"Error connecting to Google Places: {str(error)}"
             )
+
 
 async def search_nearby(lat, lng, radius=1500):
     # google api logic to get nearby here
@@ -119,8 +126,8 @@ async def search_nearby(lat, lng, radius=1500):
                     longitude = location.get('lng')
                 )
 
-                if len(restaurant.images) == 1:
-                    restaurant.images = restaurant.images * 3
+                # if len(restaurant.images) == 1:
+                    # restaurant.images = restaurant.images * 3
 
                 restaurants.append(restaurant)
         
