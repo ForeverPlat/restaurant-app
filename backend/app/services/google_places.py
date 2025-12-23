@@ -8,6 +8,9 @@ from typing import List, Optional, Dict
 
 PLACES_NEARBY_URL = "https://maps.googleapis.com/maps/api/place/nearbysearch/json"
 PLACE_PHOTO_URL = "https://maps.googleapis.com/maps/api/place/photo"
+PLACE_DETAILS_URL = "https://maps.googleapis.com/maps/api/place/details/json"
+
+DETAILS_CACHE: dict[dict[str, list[str]]] = {}
 
 # helper method
 def get_photo_url(photo_references: List[dict], max_photos: int = 5) -> List[str]:
@@ -20,6 +23,44 @@ def get_photo_url(photo_references: List[dict], max_photos: int = 5) -> List[str
             url = f"{PLACE_PHOTO_URL}?maxwidth=800&photo_reference={photo_ref}&key={GOOGLE_API_KEY}"
             urls.append(url)
     return urls
+
+async def get_details(place_id: str):
+    """Get details of a restaurnant"""
+
+    if place_id in DETAILS_CACHE:
+        return DETAILS_CACHE[place_id]
+
+    params = {
+        "place_id": place_id,
+        # "fields": "photos, editorialSummary", # check if editorialSummary is description
+        "fields": "photos",
+        "key": GOOGLE_API_KEY,
+    }
+
+    async with httpx.AsyncClient() as client:
+
+        try:
+            response = await client.get(PLACE_DETAILS_URL, params=params, timeout=10.0)
+            response.raise_for_status()
+            data = response.json()
+
+            if data.get('status') not in ['OK', 'ZERO_RESULTS']:
+                raise HTTPException(
+                    status_code=500,
+                    detail=f"Google Place Details API error: {data.get('status')}"
+                )
+
+            results = data.get('results', {})
+            images = get_photo_url(results.get('photos', []))
+
+            DETAILS_CACHE[place_id]["images"] = images
+            return images 
+
+        except httpx.HTTPError as error:
+            raise HTTPException(
+                status_code=500,
+                detail=f"Error connecting to Google Places: {str(error)}"
+            )
 
 async def search_nearby(lat, lng, radius=1500):
     # google api logic to get nearby here
@@ -53,7 +94,7 @@ async def search_nearby(lat, lng, radius=1500):
                     detail=f"Google Places API error: {data.get('status')}"
                 )
             
-            results = data.get('results', [])
+            results = data.get('results', {})
 
             for place in results:
                 types = place.get('types', [])
