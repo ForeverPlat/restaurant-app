@@ -35,6 +35,10 @@ export default function RestaurantCard({restaurant, lat, lng, images}: {restaura
         }
     }, [displayImages]);
 
+    // useEffect(() => {
+    //     setImageIndex(0);
+    // }, [images]); 
+
   return (
     <View style={styles.card}>
         <Pressable onPress={handleTap} style={{ flex: 1 }}>
