@@ -49,15 +49,14 @@ export default function RestaurantCard({restaurant, lat, lng, images}: {restaura
             >
                 <View style={styles.imageIndexBarContainer}>
                     {displayImages.map((_, index) => (
-                    <View 
-                        style={[
-                            styles.imageIndexBar, 
-                            index === imageIndex && styles.imageIndexBarActive
-                        ]}
-                        key={index}
-                    ></View>
+                      <View 
+                          style={[
+                              styles.imageIndexBar, 
+                              index === imageIndex && styles.imageIndexBarActive
+                          ]}
+                          key={index}
+                      ></View>
                     ))}
-
                 </View>
                 <LinearGradient
                     colors={["transparent", "rgba(0,0,0,0.85)"]}
@@ -70,7 +69,7 @@ export default function RestaurantCard({restaurant, lat, lng, images}: {restaura
                     <Text style={styles.name}>{restaurant.name}</Text>
 
                     <View style={styles.row}>
-                    <Text style={styles.distance}>📍 { distance(lat, lng, restaurant.latitude, restaurant.longitude) } meters away</Text>
+                      <Text style={styles.distance}>📍 { distance(lat, lng, restaurant.latitude, restaurant.longitude) } meters away</Text>
                     </View>
 
                     <Text style={styles.description}>
@@ -86,8 +85,8 @@ export default function RestaurantCard({restaurant, lat, lng, images}: {restaura
 const styles = StyleSheet.create({
 
   card: {
-    width: CARD_WIDTH,
-    height: CARD_HEIGHT,
+    width: "100%",
+    height: "100%",
     borderRadius: 24,
     overflow: "hidden",
     elevation: 8,

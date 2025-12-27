@@ -1,11 +1,7 @@
 import { useEffect, useState } from "react";
 import { ActivityIndicator, Dimensions, StyleSheet, Text, View } from "react-native";
-import Swiper from 'react-native-deck-swiper';
-import { ImageBackground } from "expo-image";
 import * as Location from 'expo-location'
-import { LinearGradient } from "expo-linear-gradient";
 import { Restaurant, Restaurants, UserPreferences } from "@/types/swipe";
-import { distance } from "@/utils/distance";
 import SwipeDeck from "@/components/swipeDeck";
 
 const { width, height } = Dimensions.get("window")

@@ -7,7 +7,7 @@ import RestaurantCard from "./restaurantCard";
 
 const { width, height } = Dimensions.get("window")
 const CARD_WIDTH = width * 0.93;
-// const CARD_HEIGHT = height * 0.75;
+const CARD_HEIGHT = height * 0.75;
 
 const url = process.env.EXPO_PUBLIC_BACKEND_URL
 
@@ -135,6 +135,8 @@ export default function SwipeDeck({ restaurants, lat, lng }: SwipeDeckProps) {
           cardHorizontalMargin={0}
           containerStyle={{ flex: 1 }}
           cardStyle={{
+            width: CARD_WIDTH,
+            height: CARD_HEIGHT,
             top: height * 0.025,
             left: (width - CARD_WIDTH) / 2,
           }}
