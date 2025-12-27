@@ -95,7 +95,11 @@ export default function SwipeDeck({ restaurants, lat, lng }: SwipeDeckProps) {
 
     useEffect(() => {
       if (restaurants.length > 0) {
-        getImages(restaurants[0]);
+        // getImages(restaurants[0]);
+        const cardsToPreload = Math.min(3, restaurants.length);
+        for (let i = 0; i < cardsToPreload; i++) {
+          getImages(restaurants[i]);
+        }
       }
     }, [restaurants]);
 
@@ -127,8 +131,10 @@ export default function SwipeDeck({ restaurants, lat, lng }: SwipeDeckProps) {
           showSecondCard
           verticalSwipe={false}
           onSwiped={(index) => {
-            const next = restaurants[index + 1];
-            if (next) getImages(next)
+            const next1 = restaurants[index + 1];
+            const next2 = restaurants[index + 2];
+            if (next1) getImages(next1);
+            if (next2) getImages(next2);
           }}
           onSwipedLeft={(index) => handleSwipe(index, 'dislike')}
           onSwipedRight={(index) => handleSwipe(index, 'like')}
@@ -148,7 +154,7 @@ export default function SwipeDeck({ restaurants, lat, lng }: SwipeDeckProps) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#ffffffff",
+    backgroundColor: "#f8f8f8",
     // justifyContent: "center",
     // alignItems: "center",
   },
