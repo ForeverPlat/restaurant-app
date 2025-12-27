@@ -20,7 +20,13 @@ export default function SavedCard({ restaurant, lat, lng }: SavedCardProps) {
 
   return (
     <View style={styles.card}>
-      <Pressable onPress={handleTap}  style={{ flex: 1 }}>
+      <Pressable 
+        onPress={handleTap}
+        style={({ pressed }) => [ // temp press response
+            { flex: 1 },
+            pressed && { opacity: 0.9, transform: [{ scale: 0.98 }] },
+          ]}
+      >
         <ImageBackground
           source={imageUri ? {uri: imageUri} : undefined} 
           style={[ styles.image, !imageUri && {  backgroundColor: "#111"  } ]}
@@ -58,6 +64,7 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 10 },
     shadowOpacity: 0.25,
     shadowRadius: 12,
+    marginBottom: 12
   },
   image: {
     flex: 1,
@@ -71,14 +78,14 @@ const styles = StyleSheet.create({
     bottom: 0,
     left: 0,
     right: 0,
-    height: "20%",
+    height: "30%",
   },
   content: {
     padding: 20,
   },
   name: {
     color: "#fff",
-    fontSize: 24,
+    fontSize: 22,
     fontWeight: "700",
     marginBottom: 6,
   },
