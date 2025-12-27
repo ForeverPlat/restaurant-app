@@ -1,7 +1,7 @@
 export type SavedRestaurant = {
     id: string
     name: string
-    price_level?: number
+    price_level?: number | null
     rating?: number // float
     images: string[]
     latitude: number // float
@@ -11,5 +11,7 @@ export type SavedRestaurant = {
 export type SavedRestaurants = SavedRestaurant[]
 
 export type SavedCardProps = {
-  restaurant: SavedRestaurant;
+  restaurant: SavedRestaurant
+  lat: number
+  lng: number
 };
