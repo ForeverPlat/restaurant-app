@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Dimensions, StyleSheet, Text, View } from "react-native";
+import { ActivityIndicator, Dimensions, StyleSheet, Text, View } from "react-native";
 import Swiper from 'react-native-deck-swiper';
 import { Restaurant } from "@/types/swipe";
 import { SwipeDeckProps } from "@/types/swipeDeck";
@@ -15,6 +15,7 @@ export default function SwipeDeck({ restaurants, lat, lng }: SwipeDeckProps) {
     const [error, setError] = useState<string | null>(null);
     const [cardImages, setCardImages] = useState<Record<string, string[]>>({});
     const [loadingImages, setLoadingImages] = useState<Record<string, boolean>>({});
+    const [initialLoading, setInitialLoading] = useState(true);
     // const [loading, setLoading] = useState(true);
 
     const renderCard = (restaurant: Restaurant) => {
@@ -94,14 +95,23 @@ export default function SwipeDeck({ restaurants, lat, lng }: SwipeDeckProps) {
     }
 
     useEffect(() => {
-      if (restaurants.length > 0) {
-        // getImages(restaurants[0]);
-        const cardsToPreload = Math.min(3, restaurants.length);
-        for (let i = 0; i < cardsToPreload; i++) {
-          getImages(restaurants[i]);
+      const loadInitialImages = async () => {
+        if (restaurants.length > 0) {
+          
+          // we wait for the first card images before loading swiper
+          await getImages(restaurants[0]);
+
+          const cardsToPreload = Math.min(3, restaurants.length);
+          for (let i = 1; i < cardsToPreload; i++) {
+            getImages(restaurants[i]); // we dont wait for these
+          }
+
+          setInitialLoading(false);
         }
       }
-    }, [restaurants]);
+
+      loadInitialImages();
+    }, [restaurants])
 
     // if (loading) {
     //   return (
@@ -110,6 +120,14 @@ export default function SwipeDeck({ restaurants, lat, lng }: SwipeDeckProps) {
     //     </View>
     //   );
     // }
+
+    if (initialLoading) {
+      return (
+        <View style={styles.container}>
+          <ActivityIndicator size="large" />
+        </View>
+      );
+    }
 
     if (error) {
       return (
