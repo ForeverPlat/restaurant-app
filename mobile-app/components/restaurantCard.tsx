@@ -8,6 +8,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 const { width, height } = Dimensions.get("window")
 const CARD_WIDTH = width * 0.93;
 const CARD_HEIGHT = height * 0.75;
+const CARD_MIDDLE = CARD_WIDTH / 2;
 
 export default function RestaurantCard({restaurant, lat, lng, images}: {restaurant: Restaurant, lat: number, lng: number, images: string[]}) {
     const [imageIndex, setImageIndex] = useState(0);
@@ -19,13 +20,25 @@ export default function RestaurantCard({restaurant, lat, lng, images}: {restaura
 
     const imageUri = displayImages[imageIndex];
 
-    const handleTap = () => {
+    const handleTap = (event: any) => {
         // if (!restaurant.images || restaurant.images.length <= 1) return;
         // setImageIndex((prev) => (prev + 1) % restaurant.images.length)
-
         if (!displayImages || displayImages.length <= 1) return;
 
-        setImageIndex(prev => (prev + 1) % displayImages.length);
+        const { locationX } = event.nativeEvent;
+        const tapPosition = locationX;
+
+        // left side
+        if (tapPosition < CARD_MIDDLE) {
+          setImageIndex(prev => 
+            prev === 0 ? displayImages.length - 1 : (prev - 1) % displayImages.length
+          );
+
+        } else if (tapPosition >= CARD_MIDDLE) { // right side and middle
+          setImageIndex(prev => (prev + 1) % displayImages.length);
+
+        }
+
     }
 
     // for safety....
