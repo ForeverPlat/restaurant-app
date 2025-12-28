@@ -146,7 +146,7 @@ export default function Saved() {
   }
 
   return (
-    <SafeAreaView style={styles.container}>
+    // <SafeAreaView style={styles.container} edges={['top']}>
       <ScrollView
         style={styles.scroll}
         contentContainerStyle={styles.list}
@@ -163,7 +163,7 @@ export default function Saved() {
           )
         )}
       </ScrollView>
-    </SafeAreaView>
+    // </SafeAreaView>
   );
 }
 
@@ -176,13 +176,15 @@ const styles = StyleSheet.create({
     // alignItems: "center",
   },
   scroll: {
-    height: "100%",
+    // height: "100%",
     flex: 1,
     // backgroundColor: "#000000ff"
   },
   list: {
     paddingVertical: 16,
     paddingHorizontal: 12,
+    paddingBottom: 16,
+    alignItems: 'center',
   },
   empty: {
     flex: 1,
