@@ -45,11 +45,18 @@ async def get_details(place_id: str):
             response.raise_for_status()
             data = response.json()
 
-            if data.get('status') not in ['OK', 'ZERO_RESULTS']:
-                raise HTTPException(
-                    status_code=500,
-                    detail=f"Google Place Details API error: {data.get('status')}"
-                )
+            # if data.get('status') not in ['OK', 'ZERO_RESULTS']:
+            #     raise HTTPException(
+            #         status_code=500,
+            #         detail=f"Google Place Details API error: {data.get('status')}"
+            #     )
+
+            # soft fail
+            print(f"Place {place_id} status:", data.get("status"))
+            if data.get("status") != "OK":
+                DETAILS_CACHE[place_id] = {"images": []}
+                # print(data.get("status"))
+                return DETAILS_CACHE[place_id]
 
             result = data.get('result', {})
             images = get_photo_url(result.get('photos', []))
