@@ -9,6 +9,6 @@ router = APIRouter(prefix='/api/user_preferences', tags=["Preferences"])
 async def get_user_preference():
     return None
 
-@router.post("/save-swipe")
-async def add_user_preference(restaurant: Restaurant, action: PreferenceAction):
-    return add_user_preference(restaurant, action)
+# @router.post("/save-swipe")
+# async def add_user_preference(restaurant: Restaurant, action: PreferenceAction):
+#     return add_user_preference(restaurant, action)

@@ -37,18 +37,22 @@ export default function SwipeDeck({ restaurants, lat, lng }: SwipeDeckProps) {
 
     const handleSwipe = async (index: number, action: 'like' | 'dislike') => {
       try {
-        // // will later need to send in the users or something
-        // // need to create endpoint
-        // const res = await fetch(`${url}/api/user_preferences/save-swipe`, {
-        //   method: 'POST',
-        //   headers: {
-        //     'Content-Type': 'application/json'
-        //   },
-        //   body: JSON.stringify({
-        //     restaurant: restaurants[index],
-        //     action
-        //   })
-        // });
+        // will later need to send in the users or something
+        // need to create endpoint
+        console.log(restaurants[index]);
+        console.log(action);
+        
+        
+        const res = await fetch(`${url}/api/restaurants/swipe`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            restaurant: restaurants[index],
+            action
+          })
+        });
 
       } catch (error) {
         setError("Something went wrong");

@@ -1,5 +1,12 @@
 from fastapi import APIRouter
 from app.services import google_places
+from app.services import save 
+from app.services import user_preference
+from app.models.restaurant import Restaurant
+from app.models.restaurant import SwipeRequest 
+
+from fastapi import HTTPException
+from pydantic import ValidationError
 
 router = APIRouter(prefix="/api/restaurants", tags=["Restaurants"])
 
@@ -14,3 +21,12 @@ async def get_details(place_id: str):
 @router.get("/{id}")
 async def get_restaurant(id: str):
     return await google_places.get_restaurant(id)
+
+@router.post("/swipe")
+async def handle_swipe(swipe_data: SwipeRequest):
+    """Handle user swipe action (like/dislike)"""
+    # user_preference.add_user_preference(restaurant, action)
+    
+    if swipe_data.action == "like":
+        return save.restaurant_to_csv(swipe_data.restaurant)
+    

@@ -76,12 +76,12 @@ export default function Saved() {
   const getSaved = async () => {
     try {
       // const res = await fetch(`${url}/api/saved`);
-      // does not exist yet
+      // // does not exist yet
       // if (!res.ok) {
       //   throw new Error("Failed to fetch recommendations");
       // }
       // const result = await res.json();
-      setSavedRestaurants(result);
+      // setSavedRestaurants(result);
     } catch (error) {
       setError(`Something went wrong getting saved ${error}.`);
     } finally {

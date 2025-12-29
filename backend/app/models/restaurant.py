@@ -4,7 +4,7 @@ from typing import List, Optional, Dict
 class Restaurant(BaseModel):
     id: str
     name: str
-    types: List[str]  # tags and cuisine
+    types: List[str] = Field(default_factory=list) # tags and cuisine
     price_level: Optional[int] = Field(None, ge=0, le=4)
     rating: Optional[float] = Field(None, ge=0, le=5)
     images: List[str] = Field(default_factory=list)
@@ -16,3 +16,7 @@ class Restaurant(BaseModel):
 class RestaurantsResponse(BaseModel): 
     restaurants: List[Restaurant]
     count: int
+
+class SwipeRequest(BaseModel):
+    restaurant: Restaurant
+    action: str

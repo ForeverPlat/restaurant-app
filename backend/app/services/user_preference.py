@@ -32,4 +32,4 @@ res = {
     "price_level": 4
 }
 
-add_user_preference(res, "like")
+# add_user_preference(res, "like")
