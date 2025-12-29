@@ -4,9 +4,7 @@ from app.services import save
 from app.services import user_preference
 from app.models.restaurant import Restaurant
 from app.models.restaurant import SwipeRequest 
-
-from fastapi import HTTPException
-from pydantic import ValidationError
+from app.utils.normalize import normalize_restaurant
 
 router = APIRouter(prefix="/api/restaurants", tags=["Restaurants"])
 
@@ -25,8 +23,10 @@ async def get_restaurant(id: str):
 @router.post("/swipe")
 async def handle_swipe(swipe_data: SwipeRequest):
     """Handle user swipe action (like/dislike)"""
-    # user_preference.add_user_preference(restaurant, action)
+    restaurant = normalize_restaurant(swipe_data.restaurant)
+
+    user_preference.add_user_preference(restaurant, swipe_data.action)
     
     if swipe_data.action == "like":
-        return save.restaurant_to_csv(swipe_data.restaurant)
+        return save.restaurant_to_csv(restaurant)
     
