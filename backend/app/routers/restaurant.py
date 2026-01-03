@@ -12,13 +12,10 @@ router = APIRouter(prefix="/api/restaurants", tags=["Restaurants"])
 async def get_nearby(lat: float, lng: float):
     return await google_places.search_nearby(lat, lng)
 
-@router.get("/details/{place_id}")
-async def get_details(place_id: str):
-    return await google_places.get_details(place_id)
-
-@router.get("/{id}")
-async def get_restaurant(id: str):
-    return await google_places.get_restaurant(id)
+@router.get("/saved")
+async def get_saved(): # later move to user route
+    """Get saved restaurants"""
+    return save.csv_to_saved_restaurants();
 
 @router.post("/swipe")
 async def handle_swipe(swipe_data: SwipeRequest):
@@ -30,3 +27,10 @@ async def handle_swipe(swipe_data: SwipeRequest):
     if swipe_data.action == "like":
         return save.restaurant_to_csv(restaurant)
     
+@router.get("/details/{place_id}")
+async def get_details(place_id: str):
+    return await google_places.get_details(place_id)
+
+@router.get("/{id}")
+async def get_restaurant(id: str):
+    return await google_places.get_restaurant(id)

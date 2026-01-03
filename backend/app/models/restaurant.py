@@ -20,3 +20,12 @@ class RestaurantsResponse(BaseModel):
 class SwipeRequest(BaseModel):
     restaurant: Restaurant
     action: str
+
+class SavedRestaurant(BaseModel):
+    id: str
+    name: str
+    price_level: Optional[int] = None
+    rating: Optional[float] = None
+    images: List[str] = []
+    latitude: Optional[float] = None
+    longitude: Optional[float] = None

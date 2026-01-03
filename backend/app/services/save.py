@@ -1,5 +1,12 @@
 import csv
+import os
 from pathlib import Path
+from app.models.restaurant import SavedRestaurant
+from app.config import GOOGLE_API_KEY
+
+def build_photo_url(photo_ref: str):
+    return f"{photo_ref}&key={GOOGLE_API_KEY}"
+
 
 def restaurant_to_csv(restaurant):
 
@@ -52,3 +59,35 @@ def restaurant_to_csv(restaurant):
 
         writer.writerow(row_data)
         # print(f"Restaurant '{restaurant.name}' saved to CSV")
+
+def csv_to_saved_restaurants():
+    print("get saved")
+    src = Path('data/saved.csv')
+
+    if not src.exists() or src.stat().st_size == 0:
+        return []
+
+    saved_restaurants = []
+
+    with open(src, 'r', newline='', encoding='utf-8') as file:
+        reader = csv.DictReader(file)
+
+        for row in reader:
+            images = []
+            if row['image_reference']:
+                images.append(build_photo_url(row['image_reference']))
+
+            restaurant = SavedRestaurant(
+                id=row['id'],
+                name=row['name'],
+                price_level=int(row['price_level']) if row['price_level'] else None,
+                rating=float(row['rating']) if row['rating'] else None,
+                images=images,                
+                latitude=float(row['latitude']) if row['latitude'] else None,
+                longitude=float(row['longitude']) if row['longitude'] else None
+            )
+            saved_restaurants.append(restaurant)
+            
+    return saved_restaurants
+
+# csv_to_saved_restaurants()
