@@ -13,6 +13,10 @@ class Restaurant(BaseModel):
     latitude: Optional[float] = None
     longitude: Optional[float] = None
 
+Restaurants = List[Restaurant]
+# class Restaurants(BaseModel):
+    # restaurants: List[Restaurant]
+
 class RestaurantsResponse(BaseModel): 
     restaurants: List[Restaurant]
     count: int
