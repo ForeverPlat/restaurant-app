@@ -2,9 +2,59 @@ import csv
 import os
 import tempfile
 from pathlib import Path
+from app.models.user_preference import UserPreferences
+
 
 async def create_preferences():
     pass
+
+def get_user_preferences(user_id: int = 1):
+    """Read user preferences from CSV and convert to UserPreferences format"""
+    preferences: UserPreferences = {
+        'types': {},
+        'price_levels': {}
+    }
+    
+    csv_path = Path('data/preferences.csv')
+    
+    if not csv_path.exists():
+        return preferences
+    
+    type_counts = {}
+    price_counts = {}
+    
+    with open(csv_path, 'r', newline='') as f:
+        reader = csv.DictReader(f)
+        for row in reader:
+            if int(row['user_id']) != user_id:
+                continue
+                
+            category = row['category']
+            value = row['value']
+            count = int(row['count'])
+            
+            if category == 'type':
+                type_counts[value] = count
+            elif category == 'price_level':
+                price_counts[value] = count
+    
+    # convert counts to weights
+    if type_counts:
+        max_type_count = max(type_counts.values())
+        
+        # research dictionary comprehension later (slight speed imporvement)
+        for cuisine_type, count in type_counts.items():
+            normalized_weight = count / max_type_count
+            preferences['types'][cuisine_type] = normalized_weight
+
+    if price_counts:
+        max_price_count = max(price_counts.values())
+        
+        for price_level, count in price_counts.items():
+            normalized_weight = count / max_price_count
+            preferences['price_levels'][price_level] = normalized_weight
+    
+    return preferences
 
 def add_user_preference(restaurant, action):
     # types
