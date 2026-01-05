@@ -16,7 +16,39 @@ export default function RestaurantCard({restaurant, lat, lng, images}: {restaura
     // const imageUri = images[imageIndex];
     const displayImages = images?.length
         ? images
-        : restaurant.images;
+        : (restaurant.images || []);
+
+    // for safety....
+    // use effects have to be before returns or something
+    useEffect(() => {
+        if (imageIndex >= displayImages.length) {
+            setImageIndex(0);
+        }
+    }, [displayImages, imageIndex]);
+
+     // return early if no images
+    if (!displayImages || displayImages.length === 0) {
+        return (
+          <View style={styles.card}>
+            <View style={[styles.image, { backgroundColor: "#111" }]}>
+              <LinearGradient
+                colors={["transparent", "rgba(0,0,0,0.85)"]}
+                locations={[0, 1]}
+                style={styles.gradient}
+              />
+              <View style={styles.content}>
+                <Text style={styles.name}>{restaurant.name}</Text>
+                <View style={styles.row}>
+                  <Text style={styles.distance}>📍 {distance(lat, lng, restaurant.latitude, restaurant.longitude)} meters away</Text>
+                </View>
+                <Text style={styles.description}>
+                  {restaurant.description ?? "Small plates & seafood mains, plus cocktails & beer on tap presented in an eco-chic space."}
+                </Text>
+              </View>
+            </View>
+          </View>
+        );
+    }
 
     const imageUri = displayImages[imageIndex];
 
@@ -41,16 +73,11 @@ export default function RestaurantCard({restaurant, lat, lng, images}: {restaura
 
     }
 
-    // for safety....
-    useEffect(() => {
-        if (imageIndex >= displayImages.length) {
-            setImageIndex(0);
-        }
-    }, [displayImages]);
-
     // useEffect(() => {
     //     setImageIndex(0);
     // }, [images]); 
+
+   
 
   return (
     <View style={styles.card}>

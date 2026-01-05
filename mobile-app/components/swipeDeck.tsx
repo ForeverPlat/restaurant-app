@@ -11,7 +11,7 @@ const CARD_HEIGHT = height * 0.75;
 
 const url = process.env.EXPO_PUBLIC_BACKEND_URL
 
-export default function SwipeDeck({ restaurants, lat, lng }: SwipeDeckProps) {
+export default function SwipeDeck({ restaurants, lat, lng, onSwipeComplete }: SwipeDeckProps) {
     const [error, setError] = useState<string | null>(null);
     const [cardImages, setCardImages] = useState<Record<string, string[]>>({});
     const [loadingImages, setLoadingImages] = useState<Record<string, boolean>>({});
@@ -54,6 +54,10 @@ export default function SwipeDeck({ restaurants, lat, lng }: SwipeDeckProps) {
           })
         });
 
+        if (res.ok && onSwipeComplete) {
+          onSwipeComplete(index);
+        }
+
       } catch (error) {
         setError("Something went wrong");
         console.error(error);
@@ -78,9 +82,9 @@ export default function SwipeDeck({ restaurants, lat, lng }: SwipeDeckProps) {
         const res = await fetch(`${url}/api/restaurants/details/${restaurant.id}`);
 
         if (!res.ok) {
-          throw new Error("Failed to fetch recommendations");
+          throw new Error("Failed to fetch images");
         }
-        
+
         const result = await res.json();
 
         setCardImages((prev) => ({

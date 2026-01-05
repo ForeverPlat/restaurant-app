@@ -4,4 +4,5 @@ export type SwipeDeckProps = {
     restaurants: Restaurant[]
     lat: number
     lng: number
+    onSwipeComplete?: (index: number) => void
 }
