@@ -91,18 +91,18 @@ export default function Swipe() {
     // We've swiped enough cards since last resort
     // We're not already resorting
     if (
-      remainingCards > BUFFER_SIZE &&
+      remainingCards > (BUFFER_SIZE + 3) &&
       swipesSinceLastResort >= SWIPES_BEFORE_RESORT &&
       !isResorting
     ) {
       console.log(`Re-sorting: ${remainingCards} cards remaining, ${swipesSinceLastResort} swipes since last resort`);
       
-      const unswiped = restaurants.slice(newIndex);
+      const unswiped = restaurants.slice(newIndex + 3);
       
       const result = await getRecommendations(unswiped);
       
       setRestaurants(prev => [
-        ...prev.slice(0, newIndex), // Keep already swiped cards
+        ...prev.slice(0, newIndex + 3), // Keep already swiped cards
         ...result.restaurants // Replace remaining with sorted
       ]);
       
