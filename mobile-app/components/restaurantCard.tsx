@@ -54,7 +54,7 @@ export default function RestaurantCard({restaurant, lat, lng, images}: {restaura
         // left side
         if (tapPosition < CARD_MIDDLE) {
           setImageIndex(prev => 
-            prev === 0 ? displayImages.length - 1 : prev - 1
+            prev === 0 ? prev : prev - 1
           );
 
         } else if (tapPosition >= CARD_MIDDLE) { // right side and middle
@@ -209,7 +209,10 @@ const styles = StyleSheet.create({
     },
 
   imageIndexBarActive: {
+    position: 'absolute',
+    height: '100%',
     backgroundColor: "#fff",
+    borderRadius: 2,
   },
 
   image: {
