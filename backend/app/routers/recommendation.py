@@ -1,6 +1,6 @@
 from fastapi import APIRouter
 from pydantic import BaseModel 
-from typing import List
+from typing import List, Optional
 from app.services import recommendation
 from app.models.restaurant import Restaurant, Restaurants 
 from app.models.user_preference import UserPreferences 

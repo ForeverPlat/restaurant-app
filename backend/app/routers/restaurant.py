@@ -5,12 +5,19 @@ from app.services import user_preference
 from app.models.restaurant import Restaurant
 from app.models.restaurant import SwipeRequest 
 from app.utils.normalize import normalize_restaurant
+from typing import Optional
 
 router = APIRouter(prefix="/api/restaurants", tags=["Restaurants"])
 
 @router.get("/nearby")
-async def get_nearby(lat: float, lng: float):
-    return await google_places.search_nearby(lat, lng)
+async def get_nearby(lat: float, lng: float, page_token: Optional[str] = None):
+    result, next_token = await google_places.search_nearby(lat, lng, page_token=page_token)
+
+    response_dict = result.dict()
+    if next_token:
+        response_dict['next_page_token'] = next_token
+    
+    return response_dict
 
 @router.get("/saved")
 async def get_saved(): # later move to user route

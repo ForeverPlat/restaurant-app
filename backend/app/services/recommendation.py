@@ -61,7 +61,6 @@ async def get_recommendations(restaurants, user_id):
     scored_restaurants.sort(key=lambda x: x['score'], reverse=True)
     sorted_restaurants = [item['restaurant'] for item in scored_restaurants]
 
-
     return RestaurantsResponse(
         restaurants = sorted_restaurants,
         count = len(scored_restaurants)

@@ -5,12 +5,14 @@ from dotenv import load_dotenv
 import os
 from app.models.restaurant import Restaurant, RestaurantsResponse
 from typing import List, Optional, Dict
+import asyncio
 
 PLACES_NEARBY_URL = "https://maps.googleapis.com/maps/api/place/nearbysearch/json"
 PLACE_PHOTO_URL = "https://maps.googleapis.com/maps/api/place/photo"
 PLACE_DETAILS_URL = "https://maps.googleapis.com/maps/api/place/details/json"
 
 DETAILS_CACHE: dict[str, dict[str, list[str]]] = {}
+PAGE_TOKEN_CACHE: dict[str, str] = {}
 
 # helper method
 def get_photo_url(photo_references: List[dict], max_photos: int = 5) -> List[str]:
@@ -76,7 +78,7 @@ async def get_details(place_id: str):
             )
 
 
-async def search_nearby(lat, lng, radius=1500):
+async def search_nearby(lat, lng, radius=1500, page_token=None):
     # google api logic to get nearby here
 
     if not GOOGLE_API_KEY:
@@ -85,15 +87,23 @@ async def search_nearby(lat, lng, radius=1500):
             detail="Google Places API key not configured"
         )
 
-
-    params = {
-        'location': f"{lat},{lng}",
-        'radius': radius,
-        'type': 'restaurant',
-        'key': GOOGLE_API_KEY
-    }
+    if page_token:
+        params = {
+            'key': GOOGLE_API_KEY,
+            'pagetoken': page_token
+        }
+        # google requires a short delay before using page token
+        await asyncio.sleep(2)
+    else:
+        params = {
+            'location': f"{lat},{lng}",
+            'radius': radius,
+            'type': 'restaurant',
+            'key': GOOGLE_API_KEY
+        }
 
     restaurants = []
+    next_page_token = None
 
     async with httpx.AsyncClient() as client:
 
@@ -109,6 +119,12 @@ async def search_nearby(lat, lng, radius=1500):
                 )
             
             results = data.get('results', {})
+            next_page_token = data.get('next_page_token')
+
+            # store the token for this location
+            if next_page_token:
+                location_key = f"{lat},{lng},{radius}"
+                PAGE_TOKEN_CACHE[location_key] = next_page_token
 
             for place in results:
                 types = place.get('types', [])
@@ -146,8 +162,13 @@ async def search_nearby(lat, lng, radius=1500):
     return RestaurantsResponse (
         restaurants=restaurants,
         count=len(restaurants)
-    )
+    ), next_page_token
     
+def get_cached_page_token(lat, lng, radius): 
+    """Get the next page token for a location if it exists"""
+    location_key = f"{lat},{lng},{radius}"
+    return PAGE_TOKEN_CACHE.get(location_key)
+
 async def get_restaurant(id):
     # google api logic to get restaurnat
     pass

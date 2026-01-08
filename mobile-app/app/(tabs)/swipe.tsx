@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
-import { ActivityIndicator, Dimensions, StyleSheet, Text, View } from "react-native";
+import { ActivityIndicator, Dimensions, Pressable, StyleSheet, Text, View } from "react-native";
 import * as Location from 'expo-location'
+import { useRouter } from 'expo-router';
 import { Restaurant, Restaurants, UserPreferences } from "@/types/swipe";
 import SwipeDeck from "@/components/swipeDeck";
 
@@ -25,6 +26,12 @@ export default function Swipe() {
   const [isResorting, setIsResorting] = useState(false);
   const [lastResortIndex, setLastResortIndex] = useState(0);
   
+  const [nextPageToken, setNextPageToken] = useState<string | null>(null);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const [noMoreRestaurants, setNoMoreRestaurants] = useState(false);
+
+  const router = useRouter();
+  
   const getRestaurants = async () => {
     try {
       // const res = await fetch(`${url}/api/recommendations?lat=${lat}&lng=${lng}`);
@@ -35,20 +42,63 @@ export default function Swipe() {
       const res = await fetch(`${url}/api/restaurants/nearby?lat=${lat}&lng=${lng}`);
 
       if (!res.ok) {
-        throw new Error("Failed to fetch recommendations");
+        throw new Error("Failed to fetch restaurants");
       }
 
       const result = await res.json();
       setRestaurants(result.restaurants);
+      setNextPageToken(result.next_page_token || null)
 
       // console.log("Fetched restaurants:", result.restaurants.length);
       // console.log("First fetched restaurant:", result.restaurants[0]);
+      console.log("Next page token:", result.next_page_token ? "Available" : "None");
     } catch (error) {
       setError("Something went wrong");
       console.error(error);
     } finally {
       setLoading(false);
     }
+  }
+
+  const loadMoreRestaurants = async () => {
+    // Can't load more if already loading or no token
+    if (isLoadingMore || !nextPageToken || noMoreRestaurants) {
+      // console.log("Cannot load more:", { isLoadingMore, hasToken: !!nextPageToken, noMoreRestaurants });
+      return false;
+    }
+
+    try {
+      setIsLoadingMore(true);
+      console.log("Loading next page of restaurants...");
+
+      const res = await fetch(`${url}/api/restaurants/nearby?lat=${lat}&lng=${lng}&page_token=${nextPageToken}`);
+
+      if (!res.ok) {
+        throw new Error("Failed to fetch next page");
+      }
+
+      const result = await res.json();
+      
+      console.log("Loaded", result.restaurants.length, "more restaurants");
+
+      setRestaurants((prev) => [
+        ...prev,
+        ...result.restaurants
+      ]);
+
+      // token for the next page
+      setNextPageToken(result.next_page_token || null);
+
+      if (!result.next_page_token) {
+        setNoMoreRestaurants(true);
+      }
+
+      return true;
+      
+    } catch (error) {
+      setIsLoadingMore(false);
+    }
+
   }
 
   const getRecommendations = async (remainingRestaurants: Restaurants) => {
@@ -111,10 +161,9 @@ export default function Swipe() {
     
     // eventaully something to get more
     // need to figure out what that system will look like
-    // if (remainingCards < 3 && !isResorting) {
-      // console.log("Running low on restaurants, fetching more...");
-      // await getMoreRestaurants();
-    // }
+    if (remainingCards <= 5 && !isLoadingMore && nextPageToken) {
+      await loadMoreRestaurants();
+    }
   }
 
   useEffect(() => {
@@ -127,6 +176,7 @@ export default function Swipe() {
     if (!lat || !lng) return;
     getRestaurants();
   }, [lat, lng]);
+
 
   useEffect(() => {
     (async () => {
@@ -163,6 +213,30 @@ export default function Swipe() {
     );
   }
 
+  if (currentIndex >= restaurants.length && restaurants.length > 0) {
+    return (
+      <View style={styles.emptyContainer}>
+        <Text style={styles.emptyEmoji}>🎉</Text>
+        <Text style={styles.emptyTitle}>You've Seen Them All!</Text>
+        <Text style={styles.emptySubtitle}>
+          {noMoreRestaurants 
+            ? "No more restaurants available nearby" 
+            : "View My Likes"}
+        </Text>
+        
+        {/* Just show the reset button */}
+        <Pressable 
+          style={styles.resetButton}
+          onPress={() => {
+            router.push('/(tabs)/saved');
+          }}
+        >
+          <Text style={styles.resetButtonText}>Saved Restaurants</Text>
+        </Pressable>
+      </View>
+    );
+  }
+
   return (
     <View style={styles.container}>
       <SwipeDeck restaurants={restaurants} lat={lat} lng={lng} onSwipeComplete={handleSwipeComplete} />
@@ -177,5 +251,42 @@ const styles = StyleSheet.create({
     backgroundColor: "#f8f8f8",
     // justifyContent: "center",
     // alignItems: "center",
+  },
+  emptyContainer: {
+    flex: 1,
+    backgroundColor: "#f8f8f8",
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 24,
+  },
+  emptyEmoji: {
+    fontSize: 80,
+    marginBottom: 16,
+  },
+  emptyTitle: {
+    fontSize: 24,
+    fontWeight: '700',
+    color: '#333',
+    marginBottom: 8,
+    textAlign: 'center',
+  },
+  emptySubtitle: {
+    fontSize: 16,
+    color: '#666',
+    marginBottom: 32,
+    textAlign: 'center',
+  },
+  resetButton: {
+    backgroundColor: '#f0f0f0',
+    paddingHorizontal: 32,
+    paddingVertical: 14,
+    borderRadius: 12,
+    minWidth: 200,
+  },
+  resetButtonText: {
+    color: '#333',
+    fontSize: 16,
+    fontWeight: '600',
+    textAlign: 'center',
   },
 });

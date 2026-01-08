@@ -1,6 +1,5 @@
 user_id,category,value,count
-1,type,lodging,5
-1,type,bar,9
-1,price_level,3,8
-1,price_level,2,5
-1,price_level,4,1
+1,type,lodging,1
+1,type,bar,2
+1,price_level,3,1
+1,price_level,2,1
