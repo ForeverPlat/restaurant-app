@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { ActivityIndicator, Dimensions, StyleSheet, Text, View } from "react-native";
+import * as Haptics from 'expo-haptics';
 import Swiper from 'react-native-deck-swiper';
 import { Restaurant } from "@/types/swipe";
 import { SwipeDeckProps } from "@/types/swipeDeck";
@@ -37,6 +38,12 @@ export default function SwipeDeck({ restaurants, lat, lng, onSwipeComplete }: Sw
 
     const handleSwipe = async (index: number, action: 'like' | 'dislike') => {
       try {
+        if (action === 'like') {
+          Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+        } else {
+          Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+        }
+
         // will later need to send in the users or something
         // need to create endpoint
         console.log(restaurants[index]);
