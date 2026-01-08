@@ -12,11 +12,57 @@ const CARD_MIDDLE = CARD_WIDTH / 2;
 
 export default function RestaurantCard({restaurant, lat, lng, images}: {restaurant: Restaurant, lat: number, lng: number, images: string[]}) {
     const [imageIndex, setImageIndex] = useState(0);
+    const [progress, setProgress] = useState(0);
+    const [isPaused, setIsPaused] = useState(false);
 
     // const imageUri = images[imageIndex];
     const displayImages = images?.length
         ? images
         : (restaurant.images || []);
+
+    const IMAGE_DURATION = 5000;
+    const TICK_INTERVAL = 50; // update every 50ms
+
+    useEffect(() => {
+      if (displayImages.length <= 1 || isPaused) return;
+
+      const intervalId = setInterval(() => {
+        setProgress((prev) => {
+          const newProgress = prev + (100 / (IMAGE_DURATION / TICK_INTERVAL));
+
+          // move to next image
+          if (newProgress >= 100) {
+            setImageIndex((curr) => (curr + 1) % displayImages.length);
+            return 0; // reset the prog
+          }
+
+          return newProgress
+        });
+      }, TICK_INTERVAL);
+
+      return () => clearInterval(intervalId);
+    }, [displayImages.length, isPaused, imageIndex]);
+
+    const handleTap = (event: any) => {
+        // if (!restaurant.images || restaurant.images.length <= 1) return;
+        // setImageIndex((prev) => (prev + 1) % restaurant.images.length)
+        if (!displayImages || displayImages.length <= 1) return;
+
+        const { locationX } = event.nativeEvent;
+        const tapPosition = locationX;
+
+        // left side
+        if (tapPosition < CARD_MIDDLE) {
+          setImageIndex(prev => 
+            prev === 0 ? displayImages.length - 1 : prev - 1
+          );
+
+        } else if (tapPosition >= CARD_MIDDLE) { // right side and middle
+          setImageIndex(prev => (prev + 1) % displayImages.length);
+        }
+
+        setProgress(0);
+    }
 
     // for safety....
     // use effects have to be before returns or something
@@ -52,26 +98,6 @@ export default function RestaurantCard({restaurant, lat, lng, images}: {restaura
 
     const imageUri = displayImages[imageIndex];
 
-    const handleTap = (event: any) => {
-        // if (!restaurant.images || restaurant.images.length <= 1) return;
-        // setImageIndex((prev) => (prev + 1) % restaurant.images.length)
-        if (!displayImages || displayImages.length <= 1) return;
-
-        const { locationX } = event.nativeEvent;
-        const tapPosition = locationX;
-
-        // left side
-        if (tapPosition < CARD_MIDDLE) {
-          setImageIndex(prev => 
-            prev === 0 ? displayImages.length - 1 : (prev - 1) % displayImages.length
-          );
-
-        } else if (tapPosition >= CARD_MIDDLE) { // right side and middle
-          setImageIndex(prev => (prev + 1) % displayImages.length);
-
-        }
-
-    }
 
     // useEffect(() => {
     //     setImageIndex(0);
@@ -81,7 +107,12 @@ export default function RestaurantCard({restaurant, lat, lng, images}: {restaura
 
   return (
     <View style={styles.card}>
-        <Pressable onPress={handleTap} style={{ flex: 1 }}>
+        <Pressable 
+          onPress={handleTap}
+          onPressIn={() => setIsPaused(true)}
+          onPressOut={() => setIsPaused(false)}
+          style={{ flex: 1 }}
+        >
             <ImageBackground
                 source={imageUri ? { uri: imageUri } : undefined}
                 style={[ styles.image, !imageUri && { backgroundColor: "#111" }, ]}
@@ -90,12 +121,26 @@ export default function RestaurantCard({restaurant, lat, lng, images}: {restaura
                 <View style={styles.imageIndexBarContainer}>
                     {displayImages.map((_, index) => (
                       <View 
+                        style={styles.imageIndexBar}
+                        key={index}
+                      >
+                        {/* background inactive part */}
+                        <View style={styles.imageIndexBarInactive} />
+
+                        <View
                           style={[
-                              styles.imageIndexBar, 
-                              index === imageIndex && styles.imageIndexBarActive
+                            styles.imageIndexBarActive,
+                            {
+                              width: index < imageIndex
+                                ? '100%' // complete images
+                                : index == imageIndex
+                                  ? `${progress}%` // curr image progress
+                                  : '0%' // upcoming images
+                            }
                           ]}
-                          key={index}
-                      ></View>
+                        >
+                        </View>
+                      </View>
                     ))}
                 </View>
                 <LinearGradient
@@ -150,9 +195,18 @@ const styles = StyleSheet.create({
   imageIndexBar: {
     flex: 1,
     height: 5,
-    backgroundColor: "#ffffff4d",
     borderRadius: 2,
+    overflow: 'hidden',
+    position: 'relative',
   },
+
+    imageIndexBarInactive: {
+      position: 'absolute',
+      width: '100%',
+      height: '100%',
+      backgroundColor: "#ffffff4d",
+      borderRadius: 2,
+    },
 
   imageIndexBarActive: {
     backgroundColor: "#fff",
