@@ -3,7 +3,7 @@ import { ActivityIndicator, Dimensions, StyleSheet, Text, View } from "react-nat
 import * as Haptics from 'expo-haptics';
 import Swiper from 'react-native-deck-swiper';
 import { Restaurant } from "@/types/swipe";
-import { SwipeAction, SwipeData, SwipeDeckProps } from "@/types/swipeDeck";
+import { CardDetails, SwipeAction, SwipeData, SwipeDeckProps } from "@/types/swipeDeck";
 import RestaurantCard from "./restaurantCard";
 
 const { width, height } = Dimensions.get("window")
@@ -16,8 +16,10 @@ const SWIPES_BEFORE_SEND_DATA = 3;
 
 export default function SwipeDeck({ restaurants, lat, lng, onSwipeComplete }: SwipeDeckProps) {
     const [error, setError] = useState<string | null>(null);
-    const [cardImages, setCardImages] = useState<Record<string, string[]>>({});
-    const [loadingImages, setLoadingImages] = useState<Record<string, boolean>>({});
+    const [cardDetails, setCardDetails] = useState<Record<string, CardDetails>>({});
+    // const [cardImages, setCardImages] = useState<Record<string, string[]>>({});
+    // const [cardDescriptions, setCardDescriptions] = useState<Record<string, string>>({});
+    const [loadingDetails, setLoadingDetails] = useState<Record<string, boolean>>({});
     const [initialLoading, setInitialLoading] = useState(true);
     const [swipeData, setSwipeData] = useState<SwipeData[]>([]);
     // const [swipeIndex, setSwipeIndex] = useState(0); // prob change this var name (swipesUntilSend) or something
@@ -29,11 +31,15 @@ export default function SwipeDeck({ restaurants, lat, lng, onSwipeComplete }: Sw
       // if (!restaurant.images?.length) return null;
 
       // const images = cardImages.get()
+      const details = cardDetails[restaurant.id];
 
       return (
         <RestaurantCard
-          restaurant={restaurant}
-          images={cardImages[restaurant.id]}
+          restaurant={{
+            ...restaurant,
+            description: details?.description ?? restaurant.description ?? ""
+          }}
+          images={details?.images}
           lat={lat}
           lng={lng}
         />
@@ -86,14 +92,14 @@ export default function SwipeDeck({ restaurants, lat, lng, onSwipeComplete }: Sw
       }
     }
 
-    const getImages = async (restaurant: Restaurant) => {
+    const getDetails = async (restaurant: Restaurant) => {
       const id = restaurant.id;
 
-      if (cardImages[id]) return;
-      if (loadingImages[id]) return;
+      if (cardDetails[id]) return;
+      if (loadingDetails[id]) return;
 
       // mark as loading
-      setLoadingImages((prev) => ({
+      setLoadingDetails((prev) => ({
         ...prev,
         [id]: true 
       }));
@@ -107,14 +113,28 @@ export default function SwipeDeck({ restaurants, lat, lng, onSwipeComplete }: Sw
 
         const result = await res.json();
 
-        setCardImages((prev) => ({
+        // setCardImages((prev) => ({
+        //   ...prev,
+        //   [restaurant.id]: result.images
+        // }));
+
+        // setCardDescriptions((prev) => ({
+        //   ...prev,
+        //   [id]: result.description,
+        // }));
+
+        setCardDetails((prev) => ({
           ...prev,
-          [restaurant.id]: result.images
+          [id]: {
+            images: result.images,
+            description: result.description,
+          },
         }));
+
       } catch (error) {
-        setError("Error fetching images")
+        setError("Error fetching details")
       } finally {
-        setLoadingImages((prev) => {
+        setLoadingDetails((prev) => {
           const next = { ...prev };
           delete next[id];
           return next;
@@ -127,11 +147,11 @@ export default function SwipeDeck({ restaurants, lat, lng, onSwipeComplete }: Sw
         if (restaurants.length > 0) {
           
           // we wait for the first card images before loading swiper
-          await getImages(restaurants[0]);
+          await getDetails(restaurants[0]);
 
           const cardsToPreload = Math.min(3, restaurants.length);
           for (let i = 1; i < cardsToPreload; i++) {
-            getImages(restaurants[i]); // we dont wait for these
+            getDetails(restaurants[i]); // we dont wait for these
           }
 
           setInitialLoading(false);
@@ -179,8 +199,8 @@ export default function SwipeDeck({ restaurants, lat, lng, onSwipeComplete }: Sw
           onSwiped={(index) => {
             const next1 = restaurants[index + 1];
             const next2 = restaurants[index + 2];
-            if (next1) getImages(next1);
-            if (next2) getImages(next2);
+            if (next1) getDetails(next1);
+            if (next2) getDetails(next2);
           }}
           onSwipedLeft={(index) => handleSwipe(index, 'dislike')}
           onSwipedRight={(index) => handleSwipe(index, 'like')}

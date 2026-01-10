@@ -3,7 +3,7 @@ import httpx
 from app.config import GOOGLE_API_KEY
 from dotenv import load_dotenv
 import os
-from app.models.restaurant import Restaurant, RestaurantsResponse
+from app.models.restaurant import Restaurant, RestaurantsResponse, RestaurantDetails
 from typing import List, Optional, Dict
 import asyncio
 
@@ -11,7 +11,7 @@ PLACES_NEARBY_URL = "https://maps.googleapis.com/maps/api/place/nearbysearch/jso
 PLACE_PHOTO_URL = "https://maps.googleapis.com/maps/api/place/photo"
 PLACE_DETAILS_URL = "https://maps.googleapis.com/maps/api/place/details/json"
 
-DETAILS_CACHE: dict[str, dict[str, list[str]]] = {}
+DETAILS_CACHE: dict[str, RestaurantDetails] = {}
 PAGE_TOKEN_CACHE: dict[str, str] = {}
 
 # helper method
@@ -26,6 +26,11 @@ def get_photo_url(photo_references: List[dict], max_photos: int = 5) -> List[str
             urls.append(url)
     return urls
 
+def build_fallback_description(result):
+    types = result.get("types", [])
+    if types:
+        return f"A {types[0].replace('_', ' ')}"
+    return None
 
 async def get_details(place_id: str):
     """Get details of a restaurnant"""
@@ -36,7 +41,7 @@ async def get_details(place_id: str):
     params = {
         "place_id": place_id,
         # "fields": "photos, editorialSummary", # check if editorialSummary is description
-        "fields": "photos",
+        "fields": "photos,editorial_summary",
         "key": GOOGLE_API_KEY,
     }
 
@@ -56,15 +61,29 @@ async def get_details(place_id: str):
             # soft fail
             print(f"Place {place_id} status:", data.get("status"))
             if data.get("status") != "OK":
-                DETAILS_CACHE[place_id] = {"images": []}
+                DETAILS_CACHE[place_id] = {
+                    "images": [],
+                    "description": ""
+                }
                 # print(data.get("status"))
                 return DETAILS_CACHE[place_id]
 
             result = data.get('result', {})
+
             images = get_photo_url(result.get('photos', []))
+            editorial = result.get('editorial_summary', {}).get("overview")
+            # reviews = result.get("reviews", [])
+            # review_snippet = reviews[0]["text"] if reviews else None
+
+            description = (
+                editorial
+                # or review_snippet
+                or build_fallback_description(result)
+            )
 
             details = {
-                "images": images
+                "images": images,
+                "description": description or ""
             }
 
             DETAILS_CACHE[place_id] = details

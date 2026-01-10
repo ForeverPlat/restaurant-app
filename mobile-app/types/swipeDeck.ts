@@ -13,3 +13,8 @@ export type SwipeData = {
     restaurant: Restaurant
     action: SwipeAction 
 }
+
+export type CardDetails = {
+  images: string[]
+  description: string
+}

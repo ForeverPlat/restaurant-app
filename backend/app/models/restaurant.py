@@ -1,5 +1,5 @@
 from pydantic import BaseModel, Field
-from typing import List, Optional, Dict
+from typing import List, Optional, TypedDict
 
 class Restaurant(BaseModel):
     id: str
@@ -16,6 +16,10 @@ class Restaurant(BaseModel):
 Restaurants = List[Restaurant]
 # class Restaurants(BaseModel):
     # restaurants: List[Restaurant]
+
+class RestaurantDetails(TypedDict):
+    images: list[str]
+    description: str
 
 class RestaurantsResponse(BaseModel): 
     restaurants: List[Restaurant]

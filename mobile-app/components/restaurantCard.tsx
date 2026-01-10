@@ -88,7 +88,7 @@ export default function RestaurantCard({restaurant, lat, lng, images}: {restaura
                   <Text style={styles.distance}>📍 {distance(lat, lng, restaurant.latitude, restaurant.longitude)} meters away</Text>
                 </View>
                 <Text style={styles.description}>
-                  {restaurant.description ?? "Small plates & seafood mains, plus cocktails & beer on tap presented in an eco-chic space."}
+                  {restaurant.description}
                 </Text>
               </View>
             </View>
@@ -158,7 +158,7 @@ export default function RestaurantCard({restaurant, lat, lng, images}: {restaura
                     </View>
 
                     <Text style={styles.description}>
-                        {restaurant.description ?? "Small plates & seafood mains, plus cocktails & beer on tap presented in an eco-chic space."}
+                        {restaurant.description}
                     </Text>
                 </View>
             </ImageBackground>
