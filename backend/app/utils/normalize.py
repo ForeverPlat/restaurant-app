@@ -1,4 +1,6 @@
-def normalize_restaurant(restaurant):
+def normalize_restaurant(swipes):
+    # list of maps, {restaurnt, action}
+
     restricted_types = {
         "restaurant",
         "food",
@@ -6,17 +8,19 @@ def normalize_restaurant(restaurant):
         "point_of_interest"
     }
 
-    if hasattr(restaurant, "types") and restaurant.types:
-        restaurant.types = [
-            t.strip().lower()
-            for t in restaurant.types
-            if t.strip().lower() not in restricted_types
-        ]
+    for swipe in swipes:
 
-    if hasattr(restaurant, "price_level"):
-        if restaurant.price_level is None:
-            restaurant.price_level = None
-        else:
-            restaurant.price_level = str(restaurant.price_level)
+        if hasattr(swipe.restaurant, "types") and swipe.restaurant.types:
+            swipe.restaurant.types = [
+                t.strip().lower()
+                for t in swipe.restaurant.types
+                if t.strip().lower() not in restricted_types
+            ]
 
-    return restaurant
+        if hasattr(swipe.restaurant, "price_level"):
+            if swipe.restaurant.price_level is None:
+                swipe.restaurant.price_level = None
+            else:
+                swipe.restaurant.price_level = str(swipe.restaurant.price_level)
+
+    return swipes 

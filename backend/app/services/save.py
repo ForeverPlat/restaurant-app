@@ -8,8 +8,7 @@ def build_photo_url(photo_ref: str):
     return f"{photo_ref}&key={GOOGLE_API_KEY}"
 
 
-def restaurant_to_csv(restaurant):
-
+def restaurant_to_csv(swipes):
     src = Path('data/saved.csv')
     src.parent.mkdir(parents=True, exist_ok=True)
 
@@ -37,27 +36,32 @@ def restaurant_to_csv(restaurant):
                 'longitude'
             ])
 
-        image_ref = ''
-        if restaurant.images and len(restaurant.images) > 0:
-            image_url = restaurant.images[0]
+        for swipe in swipes:
 
-            # cut everything after key=
-            if '&key=' in image_url:
-                image_ref = image_url.split('&key=')[0]
-            else:
-                image_ref = image_url
+            # temp solution
+            if swipe.action == "dislike": continue
 
-        row_data = [
-            restaurant.id,
-            restaurant.name,
-            restaurant.price_level or '',
-            restaurant.rating or '',
-            image_ref,
-            restaurant.latitude or '',
-            restaurant.longitude or ''
-        ]
+            image_ref = ''
+            if swipe.restaurant.images and len(swipe.restaurant.images) > 0:
+                image_url = swipe.restaurant.images[0]
 
-        writer.writerow(row_data)
+                # cut everything after key=
+                if '&key=' in image_url:
+                    image_ref = image_url.split('&key=')[0]
+                else:
+                    image_ref = image_url
+
+            row_data = [
+                swipe.restaurant.id,
+                swipe.restaurant.name,
+                swipe.restaurant.price_level or '',
+                swipe.restaurant.rating or '',
+                image_ref,
+                swipe.restaurant.latitude or '',
+                swipe.restaurant.longitude or ''
+            ]
+
+            writer.writerow(row_data)
         # print(f"Restaurant '{restaurant.name}' saved to CSV")
 
 def csv_to_saved_restaurants():

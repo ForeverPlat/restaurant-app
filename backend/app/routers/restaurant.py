@@ -3,9 +3,9 @@ from app.services import google_places
 from app.services import save 
 from app.services import user_preference
 from app.models.restaurant import Restaurant
-from app.models.restaurant import SwipeRequest 
+from app.models.restaurant import Swipe, SwipeRequest
 from app.utils.normalize import normalize_restaurant
-from typing import Optional
+from typing import Optional, List
 
 router = APIRouter(prefix="/api/restaurants", tags=["Restaurants"])
 
@@ -25,14 +25,14 @@ async def get_saved(): # later move to user route
     return save.csv_to_saved_restaurants();
 
 @router.post("/swipe")
-async def handle_swipe(swipe_data: SwipeRequest):
+async def handle_swipe(request: SwipeRequest):
     """Handle user swipe action (like/dislike)"""
-    restaurant = normalize_restaurant(swipe_data.restaurant)
+    restaurant = normalize_restaurant(request.swipes)
 
-    user_preference.add_user_preference(restaurant, swipe_data.action)
+    user_preference.add_user_preference(request.swipes)
     
-    if swipe_data.action == "like":
-        return save.restaurant_to_csv(restaurant)
+    # if swipes.action == "like":
+    return save.restaurant_to_csv(request.swipes)
     
 @router.get("/details/{place_id}")
 async def get_details(place_id: str):

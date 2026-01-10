@@ -56,23 +56,11 @@ def get_user_preferences(user_id: int = 1):
     
     return preferences
 
-def add_user_preference(restaurant, action):
-    # types
-    # price_levels
-
-    # temp it will be based on only right swipes
-    # => UPDATE LATER
-    if (action == "dislike"): return
-
+def add_user_preference(swipes):
     src = Path('data/preferences.csv')
     src.parent.mkdir(parents=True, exist_ok=True) 
 
     VALID_PRICE_LEVELS = {"1", "2", "3", "4"}
-
-    price_level = getattr(restaurant, "price_level", None)
-
-    if price_level not in VALID_PRICE_LEVELS:
-        price_level = None
 
     existing_types = set()
     existing_price_levels = set()
@@ -81,41 +69,63 @@ def add_user_preference(restaurant, action):
     if src.exists():
         with open(src, "r", newline="") as f:
             reader = csv.DictReader(f)
-            for row in reader:
+            updated_rows = list(reader)
+            for row in updated_rows:
                 # types
                 if row["category"] == "type":
                     existing_types.add(row["value"])
-                    if row["value"] in restaurant.types:
-                        row["count"] = str(int(row["count"]) + 1)
-
                 # price levels
-                elif row["category"] == "price_level" and price_level is not None:
+                elif row["category"] == "price_level":
                     existing_price_levels.add(row["value"])
-                    if row["value"] == price_level:
-                        row["count"] = str(int(row["count"]) + 1)
 
-                updated_rows.append(row)
-    
-    # find new types not in csv
-    new_types = set(restaurant.types) - existing_types
+    for swipe in swipes:
+        # types
+        # price_levels
 
-    # add missing types
-    for t in new_types:
-        updated_rows.append({
-            "user_id": 1,
-            "category": "type",
-            "value": t,
-            "count": "1"
-        })
+        # temp it will be based on only right swipes
+        # => UPDATE LATER
+        if (swipe.action == "dislike"): continue 
 
-    # add missing price level
-    if price_level is not None and price_level not in existing_price_levels:
-        updated_rows.append({
-            "user_id": 1,
-            "category": "price_level",
-            "value": price_level,
-            "count": "1"
-        })
+        price_level = getattr(swipe.restaurant, "price_level", None)
+
+        if price_level not in VALID_PRICE_LEVELS:
+            price_level = None
+
+       # Update counts for types
+        for restaurant_type in swipe.restaurant.types:
+            found = False
+            for row in updated_rows:
+                if row["category"] == "type" and row["value"] == restaurant_type:
+                    row["count"] = str(int(row["count"]) + 1)
+                    found = True
+                    break
+            
+            if not found and restaurant_type not in existing_types:
+                updated_rows.append({
+                    "user_id": 1,
+                    "category": "type",
+                    "value": restaurant_type,
+                    "count": "1"
+                })
+                existing_types.add(restaurant_type) 
+
+        # Update count for price_level
+        if price_level is not None:
+            found = False
+            for row in updated_rows:
+                if row["category"] == "price_level" and row["value"] == price_level:
+                    row["count"] = str(int(row["count"]) + 1)
+                    found = True
+                    break
+            
+            if not found and price_level not in existing_price_levels:
+                updated_rows.append({
+                    "user_id": 1,
+                    "category": "price_level",
+                    "value": price_level,
+                    "count": "1"
+                })
+                existing_price_levels.add(price_level)
 
     with tempfile.NamedTemporaryFile("w", delete=False, newline="") as temp:
         writer = csv.DictWriter(
@@ -127,10 +137,10 @@ def add_user_preference(restaurant, action):
 
     os.replace(temp.name, src)
 
-# res = {
-#     "types": ["japanese", "asian", "seafood"],
-#     "price_level": 4
-# }
+    # res = {
+    #     "types": ["japanese", "asian", "seafood"],
+    #     "price_level": 4
+    # }
 
-# add_user_preference(res, "like")
+    # add_user_preference(res, "like")
 

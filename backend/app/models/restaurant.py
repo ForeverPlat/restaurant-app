@@ -21,9 +21,13 @@ class RestaurantsResponse(BaseModel):
     restaurants: List[Restaurant]
     count: int
 
-class SwipeRequest(BaseModel):
+class Swipe(BaseModel):
     restaurant: Restaurant
     action: str
+
+# SwipeRequest = List[SwipeData]
+class SwipeRequest(BaseModel):
+    swipes: List[Swipe]
 
 class SavedRestaurant(BaseModel):
     id: str
