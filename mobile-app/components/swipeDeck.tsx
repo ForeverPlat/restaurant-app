@@ -3,7 +3,7 @@ import { ActivityIndicator, Dimensions, StyleSheet, Text, View } from "react-nat
 import * as Haptics from 'expo-haptics';
 import Swiper from 'react-native-deck-swiper';
 import { Restaurant } from "@/types/swipe";
-import { SwipeDeckProps } from "@/types/swipeDeck";
+import { SwipeAction, SwipeData, SwipeDeckProps } from "@/types/swipeDeck";
 import RestaurantCard from "./restaurantCard";
 
 const { width, height } = Dimensions.get("window")
@@ -12,11 +12,15 @@ const CARD_HEIGHT = height * 0.75;
 
 const url = process.env.EXPO_PUBLIC_BACKEND_URL
 
+const SWIPES_BEFORE_SEND_DATA = 3;
+
 export default function SwipeDeck({ restaurants, lat, lng, onSwipeComplete }: SwipeDeckProps) {
     const [error, setError] = useState<string | null>(null);
     const [cardImages, setCardImages] = useState<Record<string, string[]>>({});
     const [loadingImages, setLoadingImages] = useState<Record<string, boolean>>({});
     const [initialLoading, setInitialLoading] = useState(true);
+    const [swipeData, setSwipeData] = useState<SwipeData[]>([]);
+    // const [swipeIndex, setSwipeIndex] = useState(0); // prob change this var name (swipesUntilSend) or something
     // const [loading, setLoading] = useState(true);
 
     const renderCard = (restaurant: Restaurant) => {
@@ -36,29 +40,38 @@ export default function SwipeDeck({ restaurants, lat, lng, onSwipeComplete }: Sw
       );
     };
 
-    const handleSwipe = async (index: number, action: 'like' | 'dislike') => {
-      try {
-        if (action === 'like') {
-          Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-        } else {
-          Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-        }
+    const handleSwipe = async (index: number, action: SwipeAction) => {
+      if (action === 'like') {
+        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+      } else {
+        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+      }
 
+      const newSwipeData = [
+        ...swipeData,
+        { restaurant: restaurants[index], action }
+      ];
+  
+      setSwipeData(newSwipeData);
+
+      if (swipeData.length >= SWIPES_BEFORE_SEND_DATA) {
+        await handleSend(newSwipeData, index);
+      }
+
+    }
+
+    const handleSend = async (swipes: SwipeData[], index: number) => {
+
+      try {
         // will later need to send in the users or something
         // need to create endpoint
-        console.log(restaurants[index]);
-        console.log(action);
-        
         
         const res = await fetch(`${url}/api/restaurants/swipe`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json'
           },
-          body: JSON.stringify({
-            restaurant: restaurants[index],
-            action
-          })
+          body: JSON.stringify({ swipes })
         });
 
         if (res.ok && onSwipeComplete) {
