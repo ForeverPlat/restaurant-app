@@ -2,6 +2,7 @@ from fastapi import APIRouter
 from app.services import google_places
 from app.services import save 
 from app.services import user_preference
+from app.services import recommendation 
 from app.models.restaurant import Restaurant
 from app.models.restaurant import Swipe, SwipeRequest
 from app.utils.normalize import normalize_restaurant
@@ -17,6 +18,8 @@ async def get_nearby(lat: float, lng: float, page_token: Optional[str] = None):
     if next_token:
         response_dict['next_page_token'] = next_token
     
+    response_dict = recommendation.get_recommendations(response_dict)
+
     return response_dict
 
 @router.get("/saved")
