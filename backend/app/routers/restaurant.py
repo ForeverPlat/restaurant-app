@@ -14,13 +14,15 @@ router = APIRouter(prefix="/api/restaurants", tags=["Restaurants"])
 async def get_nearby(lat: float, lng: float, page_token: Optional[str] = None):
     result, next_token = await google_places.search_nearby(lat, lng, page_token=page_token)
 
-    response_dict = result.dict()
-    if next_token:
-        response_dict['next_page_token'] = next_token
-    
-    response_dict = recommendation.get_recommendations(response_dict)
+    # print(response_dict)
+    recommendations = await recommendation.get_recommendations(
+        result.restaurants, user_id=1
+    )
 
-    return response_dict
+    if next_token:
+        recommendations.next_page_token = next_token
+
+    return recommendations
 
 @router.get("/saved")
 async def get_saved(): # later move to user route

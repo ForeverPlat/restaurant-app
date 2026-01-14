@@ -24,6 +24,8 @@ class RestaurantDetails(TypedDict):
 class RestaurantsResponse(BaseModel): 
     restaurants: List[Restaurant]
     count: int
+    next_page_token: Optional[str] = None
+
 
 class Swipe(BaseModel):
     restaurant: Restaurant

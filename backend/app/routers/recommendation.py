@@ -10,6 +10,7 @@ router = APIRouter(prefix="/api/recommendations", tags=["Recommendation"])
 class RecommendationRequest(BaseModel):
     restaurants: List[Restaurant]
     user_id: int = 1  # default to user 1 for now
+    
 
 @router.post("")
 async def get_recommendations(request: RecommendationRequest): # eventyally send in user id as well so u get a specific user preferences
