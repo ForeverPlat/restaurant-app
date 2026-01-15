@@ -1,14 +1,15 @@
 import React from 'react';
 import { View, Dimensions, Text, StyleSheet, Pressable } from 'react-native';
-import { SavedCardProps } from '@/types/saved';
-import { ImageBackground } from 'expo-image';
+import { Restaurant } from '@/types/swipe';
+import { Restaurant } from 'expo-image';
+import { useLocationSearchParams } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 
 const { width, height } = Dimensions.get("window");
 const IMAGE_HEIGHT = width * 0.65;
 const IMAGE_WIDTH = height * 0.33;
 
-export default function RestauantDetails({ restaurant, lat, lng }: SavedCardProps) {
+export default function RestauantDetails(restaurant: Restaurant) {
 
     const handleDirections = () => {
 

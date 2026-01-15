@@ -1,10 +1,11 @@
 import { View, Text, StyleSheet, Pressable, Dimensions } from 'react-native'
 import React from 'react'
-import { SavedCardProps } from '@/types/saved'
-import { ImageBackground } from 'expo-image'
+import { SavedCardProps } from '@/types/saved';
+import { ImageBackground } from 'expo-image';
+import { useRouter } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
 import { distance } from '@/utils/distance';
-
+import RestaurantDetails from './restaurantDetails';
 
 const { width, height } = Dimensions.get("window");
 const CARD_WIDTH = width * 0.93;
@@ -13,15 +14,22 @@ const CARD_HEIGHT = height * 0.33;
 export default function SavedCard({ restaurant, lat, lng }: SavedCardProps) {
 
   const imageUri = restaurant.images[0];
+  const router = useRouter();
 
-  const handleTap = () => {
-
+  const handlePress = () => {
+    // return <RestaurantDetails restaurant={restaurant} />
+    router.push({
+        pathname: '/restaurant/[id]',
+        params: {
+            id: restaurant.id
+        },
+    });
   }
 
   return (
     <View style={styles.card}>
       <Pressable 
-        onPress={handleTap}
+        onPress={handlePress}
         style={({ pressed }) => [ // temp press response
             { flex: 1 },
             pressed && { opacity: 0.9, transform: [{ scale: 0.98 }] },
