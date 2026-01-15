@@ -12,7 +12,7 @@ const CARD_MIDDLE = CARD_WIDTH / 2;
 
 export default function RestaurantCard({restaurant, lat, lng, images}: {restaurant: Restaurant, lat: number, lng: number, images: string[]}) {
     const [imageIndex, setImageIndex] = useState(0);
-    const [progress, setProgress] = useState(0);
+    const [progress, setProgress] = useState(1);
     const [isPaused, setIsPaused] = useState(false);
 
     // const imageUri = images[imageIndex];
