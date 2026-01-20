@@ -37,3 +37,6 @@ mobile-app/.expo/
 mobile-app/.expo-shared/
 mobile-app/dist/
 mobile-app/app-example/
+
+# Backend
+**/.data/

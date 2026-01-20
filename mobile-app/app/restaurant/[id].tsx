@@ -1,16 +1,17 @@
-import React from 'react';
-import { View, Text } from 'react-native';
+import React from "react";
+import { View, Text } from "react-native";
 // import { useLocationSearchParams } from 'expo-router';
-import { useLocalSearchParams } from 'expo-router'
-// import RestaurantDetails from './restaurantDetails';
+import { useLocalSearchParams } from "expo-router";
+import RestauantDetails from "@/components/restaurantDetails";
 
 export default function RestaurantDetailsScreen() {
-    const { id } = useLocalSearchParams();
+  const { id } = useLocalSearchParams();
 
-    return (
-        <View>
-            {/*<RestaurantDetails restaurant={restaurant} />*/}
-            <Text>{id}</Text>
-        </View>
-    )
+  return (
+    <View>
+      <RestauantDetails id={id} />
+
+      <Text>{id}</Text>
+    </View>
+  );
 }
